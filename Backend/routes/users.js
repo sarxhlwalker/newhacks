@@ -11,12 +11,13 @@ const mongoose = require("mongoose");
  * Sends back the apid I expect in future api calls if successfully logs in
  * Otherwise sends back just the number 404
  */
-router.post('/log', async function(req, res, next){
-    let user = await userModel.findOne({username: req.body.username, password: req.body.password});
-    if(user) {
+router.post('/login', async function (req, res, next) {
+    let user = await userModel.findOne({ username: req.body.username, password: req.body.password });
+    if (user) {
         res.send(user.apid)
-    }else{
-        res.send('404')
+    } else {
+        res.status(404);
+        res.send("");
     }
 });
 
@@ -24,15 +25,15 @@ router.post('/log', async function(req, res, next){
 /*
  * Save the user
  */
-router.post('/save', async function(req, res, next){
+router.post('/save', async function (req, res, next) {
     let count = await userModel.countDocuments({}) + 1;
     console.log(req.body)
     // A very stupid way to find a random unique string id that can be used as an api key
     let myApid = funcs.generateTextId(32);
-    let repeats = await userModel.findOne({apid: myApid});
-    while(repeats){
+    let repeats = await userModel.findOne({ apid: myApid });
+    while (repeats) {
         myApid = funcs.generateTextId(32);
-        repeats = await userModel.findOne({apid: myApid});
+        repeats = await userModel.findOne({ apid: myApid });
     }
 
     let user = {
