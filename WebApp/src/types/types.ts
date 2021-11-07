@@ -48,7 +48,7 @@ export interface Assignment {
     title: string;
     description: string;
     date: Date;
-    completedIDs: string[];
+    completedBy: string[];
 }
 
 // Conversion functions
@@ -69,7 +69,7 @@ export function convertRawAssignment(data: RawAssignmentData): Assignment {
         id: data.assignmentId,
         title: data.title,
         description: data.description,
-        completedIDs: JSON.parse(data.completed),
+        completedBy: JSON.parse(data.completed),
         date: new Date(data.date),
     };
 }

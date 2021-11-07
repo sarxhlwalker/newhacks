@@ -52,7 +52,13 @@ class GroupViewContainer extends React.Component<IProps, IState> {
             return (
                 <>
                     {assignments.map((a) => (
-                        <AssignmentCard assignment={a} key={a.id}></AssignmentCard>
+                        <AssignmentCard
+                            assignment={a}
+                            key={a.id}
+                            groupMembers={this.state.userList!}
+                            selfDataCache={this.selfDataCache!}
+                            groupId={this.state.groupData!.id}
+                        ></AssignmentCard>
                     ))}
                 </>
             );
@@ -212,8 +218,7 @@ class GroupViewContainer extends React.Component<IProps, IState> {
         return (
             <>
                 <h2>{groupData.name}</h2>
-                Group Code:{" "}
-                <code>{this.state.groupData!.id}</code>
+                Group Code: <code>{this.state.groupData!.id}</code>
                 <br />
                 <a
                     href="#"
@@ -272,11 +277,7 @@ class GroupViewContainer extends React.Component<IProps, IState> {
                 let rawGroupData = response.data!;
                 let groupData = rawGroupData.groups.map((g) => convertRawGroupData(g));
                 let thisGroup = groupData.filter((g) => g.id === this.props.groupId)[0];
-
-                this.setState({
-                    groupData: thisGroup,
-                });
-
+                
                 // Then, fetch group member data
                 (async () => {
                     let userData: RawUserLookupData[] = [];
@@ -296,6 +297,7 @@ class GroupViewContainer extends React.Component<IProps, IState> {
                     // Then, update state
                     this.setState({
                         userList: userList,
+                        groupData: thisGroup
                     });
                 });
             }
