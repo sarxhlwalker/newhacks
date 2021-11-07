@@ -19,6 +19,9 @@ async function _apiCall<T>(endpoint: string, method: string, body: any) {
     try {
         response = await fetch(window.location.origin + "/" + endpoint, {
             method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(body),
         });
         httpStatus = response.status;
