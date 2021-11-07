@@ -32,7 +32,7 @@ export interface Group {
     leaderID: string;
     leaderName: string;
     memberIDs: string[];
-    assignments: any;
+    assignments: any[];
 }
 
 // Conversion functions

@@ -17,7 +17,7 @@ export class Modal extends React.Component<IProps, IState> {
         };
     }
 
-    setBody(to: JSX.Element) {
+    setPopup(to: JSX.Element) {
         this.setState({
             body: to,
         });

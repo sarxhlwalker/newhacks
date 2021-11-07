@@ -52,7 +52,7 @@ class LoginContainer extends React.Component<IProps, IState> {
                             } else {
                                 let sessionId = (response.data as any).sid;
                                 AppStorage.setSessionID(sessionId);
-                                console.log(response.data);
+                                
                                 this.props.pageView.transitionToPage(GroupsPage);
                             }
                         });

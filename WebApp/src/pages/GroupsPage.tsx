@@ -31,7 +31,6 @@ class GroupsContainer extends React.Component<IProps, IState> {
             sid: AppStorage.assertSessionID(),
         }).then((response) => {
             this.selfDataCache = response.data!;
-            console.log(response.data);
 
             apiPost<{ groups: RawGroupData[] }>("groups/get", {
                 sid: AppStorage.assertSessionID(),
@@ -39,7 +38,6 @@ class GroupsContainer extends React.Component<IProps, IState> {
                 if (response.ok) {
                     let rawGroupData = response.data!.groups;
                     let groupData = rawGroupData.map((g) => convertRawGroupData(g));
-                    console.log(groupData);
                     this.setState({
                         groups: groupData,
                     });
@@ -153,7 +151,7 @@ class GroupsContainer extends React.Component<IProps, IState> {
                         className="four columns"
                         onClick={() => {
                             let modal = Modal.currentModalInstance!;
-                            modal.setBody(this.joinGroupModal(modal));
+                            modal.setPopup(this.joinGroupModal(modal));
                         }}
                     >
                         Join a Group
@@ -162,7 +160,7 @@ class GroupsContainer extends React.Component<IProps, IState> {
                         className="four columns"
                         onClick={() => {
                             let modal = Modal.currentModalInstance!;
-                            modal.setBody(this.createGroupModal(modal));
+                            modal.setPopup(this.createGroupModal(modal));
                         }}
                     >
                         Create a Group
