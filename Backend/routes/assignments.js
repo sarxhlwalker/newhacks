@@ -240,19 +240,22 @@ router.post('/mark/done', async function (req, res, next) {
                     let groupMembers = await groupModel.findOne({groupId: group.groupId});
                     let phones = []
                     for (member of JSON.parse(groupMembers.members)){
-                        phones.push(member.phone);
+                        console.log(member);
+                        let user = await userModel.findOne({id: member});
+                        phones.push(user.phone);
                     }
 
                     let content = resUser.username +" has just completed " +assnRep.title +". You can do it too!"
+                    console.log(phones);
                     for (phone of phones){
-                        client.messages
-                            .create({
+                        console.log(phone);
+                        await client.messages.create({
                                 body: content,
                                 to: '+1' +phone, // Text this number
-                                from: '+19033070815', // From a valid Twilio number
-                            })
-                            .then((message) => console.log(message.sid));
+                                from: '+16416306193', // From a valid Twilio number
+                            });
                     }
+
 
                     res.send({
                         ok: true,
