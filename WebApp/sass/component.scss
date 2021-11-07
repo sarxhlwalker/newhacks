@@ -5,6 +5,15 @@
     position: absolute;
 }
 
+.app-header {
+    background-color: #546E7A;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 10px;
+}
+
 .alert-box {
     display: inline-block;
     height: 38px;

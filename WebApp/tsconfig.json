@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "target": "es5",
+        "lib": ["DOM", "ES2015"],
         "module": "amd",
         "jsx": "react",
         "outFile": "./static/bundle.js",

@@ -2,7 +2,7 @@ export interface APIResponse<T> {
     ok: boolean;
     httpStatus: number;
     error: string | null;
-    data: T;
+    data: T | null;
 }
 
 export function apiGet<T>(endpoint: string, body: any) {
@@ -13,23 +13,23 @@ export function apiPost<T>(endpoint: string, body: any) {
     return _apiCall<T>(endpoint, "POST", body);
 }
 
-async function _apiCall<T>(endpoint: string, method: string, body: any) {
+async function _apiCall<T>(endpoint: string, method: string, body: any): Promise<APIResponse<T>> {
     let response;
     let httpStatus;
     try {
         response = await fetch(window.location.origin + "/" + endpoint, {
             method: method,
             headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(body),
         });
         httpStatus = response.status;
-    } catch (err) {
+    } catch (err: any) {
         return {
             ok: false,
-            error: "An unexpected error has occurred",
-            httpStatus: httpStatus,
+            error: "The request failed: "+err.toString(),
+            httpStatus: httpStatus || 0,
             data: null,
         };
     }

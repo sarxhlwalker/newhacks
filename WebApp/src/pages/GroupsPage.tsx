@@ -1,4 +1,5 @@
 import React from "react";
+import { Header } from "../components/PageHeader";
 import { Page } from "../Page";
 import { PageView } from "../PageView";
 
@@ -25,9 +26,12 @@ class GroupsContainer extends React.Component<IProps, IState> {
 export class GroupsPage extends Page {
     pageRender() {
         return (
-            <div className="container">
-                <GroupsContainer pageView={this.props.pageView}></GroupsContainer>
-            </div>
+            <>
+                <Header></Header>
+                <div className="container">
+                    <GroupsContainer pageView={this.props.pageView}></GroupsContainer>
+                </div>
+            </>
         );
     }
 }
