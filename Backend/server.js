@@ -1,58 +1,56 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const express = require('express');
-const debug = require('debug')('localhost:server')
-const path = require('path');
-const bodyParser = require('body-parser')
+const express = require("express");
+const debug = require("debug")("localhost:server");
+const path = require("path");
+const bodyParser = require("body-parser");
 
-const cors = require('cors');
-const http = require('http');
+const cors = require("cors");
+const http = require("http");
 
 //Mongoose Models
-const userModel = require('./models/users');
+const userModel = require("./models/users");
 
 //Initialize mongoose models
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 //Express routes
-const usersRouter = require('./routes/users');
+const usersRouter = require("./routes/users");
 
 //Connect to atlas
-mongoose.connect(process.env.CONNECTION_URL, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const app = express();
 
 //Basic express init
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '../WebApp/static')));
+app.use(express.static(path.join(__dirname, "../WebApp/static")));
 
 //Express sessions initialization: Note: add secret key to 'secret'.
-let my_session = require('express-session')({
+let my_session = require("express-session")({
     secret: process.env.SESSION_KEY,
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
 });
 app.use(my_session);
 
-
 //Use the express routes
-app.use('/users', usersRouter);
+app.use("/users", usersRouter);
 
 //CORS can be removed now, (added it during a dual server boot setup)
 app.use(cors());
 
-
 // Set port to normalize
-const port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+const port = normalizePort(process.env.PORT || "3000");
+app.set("port", port);
 
 const server = http.createServer(app);
 
 // Listen on provided port, on all network interfaces.
 server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+server.on("error", onError);
+server.on("listening", onListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -79,22 +77,20 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-    if (error.syscall !== 'listen') {
+    if (error.syscall !== "listen") {
         throw error;
     }
 
-    const bind = typeof port === 'string'
-        ? 'Pipe ' + port
-        : 'Port ' + port;
+    const bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
-        case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
+        case "EACCES":
+            console.error(bind + " requires elevated privileges");
             process.exit(1);
             break;
-        case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
+        case "EADDRINUSE":
+            console.error(bind + " is already in use");
             process.exit(1);
             break;
         default:
@@ -108,8 +104,6 @@ function onError(error) {
 
 function onListening() {
     const addr = server.address();
-    const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
-    console.log('Listening on ' + bind);
+    const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+    console.log("Listening on " + bind);
 }
