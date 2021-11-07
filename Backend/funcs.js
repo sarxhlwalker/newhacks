@@ -1,4 +1,6 @@
 const userModel = require('./models/users');
+const groupModel = require('./models/groups');
+
 const mongoose = require("mongoose");
 
 module.exports = {
@@ -34,6 +36,11 @@ module.exports = {
         }
         if (user.password.length === 0) errs.push('Password empty');
         return errs;
+    },
+    validateGroup: async function (group){
+        let errs = []
+        if(!group.name) errs.push('Add a name')
+        return errs
     },
     md5password: function (password) {
         let crypto = require('crypto');
