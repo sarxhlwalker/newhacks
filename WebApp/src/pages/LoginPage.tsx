@@ -3,6 +3,7 @@ import { apiPost } from "../api";
 import { AlertBox } from "../components/alert";
 import { Page } from "../Page";
 import { PageView } from "../PageView";
+import { GroupsPage } from "./GroupsPage";
 import { RegistrationPage } from "./RegisterPage";
 
 interface IProps {
@@ -50,7 +51,7 @@ class LoginContainer extends React.Component<IProps, IState> {
                                 });
                             } else {
                                 console.log(response);
-                                this.props.pageView.transitionToPage(LoginPage);
+                                this.props.pageView.transitionToPage(GroupsPage);
                             }
                         });
                     }}
