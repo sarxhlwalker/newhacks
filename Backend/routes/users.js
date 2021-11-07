@@ -65,8 +65,6 @@ router.post('/lookup', async function(req, res, next){
  * Save the user data if it's valid, after doing server side validation.
  */
 router.post("/save", async function (req, res, next) {
-    let count = (await userModel.countDocuments({})) + 1;
-    console.log(req.body);
     // A very stupid way to find a random unique string id that can be used as an api key
     let myApid = funcs.generateTextId(32);
     let repeats = await userModel.findOne({ sid: myApid });
@@ -82,6 +80,7 @@ router.post("/save", async function (req, res, next) {
         id_repeats = await userModel.findOne({id: ps_id});
     }
 
+    console.log(ps_id);
     let user = {
         _id: new mongoose.Types.ObjectId(),
         id: ps_id,

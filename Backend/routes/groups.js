@@ -234,7 +234,7 @@ router.post('/kick', async function(req, res, next){
                     });
                     curr_groups = JSON.parse(resUser.groups);
                     curr_groups = curr_groups.filter(function (value, index, arr){
-                        return value !== userToKick.id
+                        return value !== groupFind.groupId
                     });
 
                     let res1 = await groupModel.updateOne({groupId: groupFind.groupId}, {members: JSON.stringify(group_members)});
