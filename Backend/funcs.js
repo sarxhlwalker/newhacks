@@ -21,7 +21,7 @@ module.exports = {
         if (!user.email) errs.push('Have email')
 
         const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        let val =  re.test(String(user.email).toLowerCase());
+        let val = re.test(String(user.email).toLowerCase());
         if (!val) errs.push('Have an email');
 
         let repeat = await userModel.findOne({email: user.email});
@@ -35,4 +35,8 @@ module.exports = {
         if (user.password.length === 0) errs.push('Password empty');
         return errs;
     },
+    md5password: function (password) {
+        let crypto = require('crypto');
+        return crypto.createHash('md5').update(password).digest('hex');
+    }
 }
