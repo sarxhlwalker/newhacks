@@ -27,11 +27,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../WebApp/static')));
 
+//Express sessions initialization: Note: add secret key to 'secret'.
+let my_session = require('express-session')({
+    secret: process.env.SESSION_KEY,
+    resave: true,
+    saveUninitialized: true
+});
+app.use(my_session);
+
+
 //Use the express routes
 app.use('/users', usersRouter);
 
 //CORS can be removed now, (added it during a dual server boot setup)
 app.use(cors());
+
 
 // Set port to normalize
 const port = normalizePort(process.env.PORT || '3000');

@@ -14,10 +14,20 @@ const mongoose = require("mongoose");
 router.post('/login', async function (req, res, next) {
     let user = await userModel.findOne({ username: req.body.username, password: req.body.password });
     if (user) {
-        res.send(user.apid)
+        let query = {username: req.body.username, password: req.body.password};
+        let result = await userModel.updateOne(query, {apid: req.sessionID});
+        res.send({
+            ok: true,
+            error: null,
+            data: [{sid: req.sessionID, result: result}] // List of sid and result of trying to update the req
+        });
     } else {
         res.status(404);
-        res.send("");
+        res.send({
+            ok: true,
+            error: 'Could not find user',
+            data: null
+        });
     }
 });
 
@@ -50,7 +60,11 @@ router.post('/save', async function (req, res, next) {
     let access_token = req.body.token;
 
     let result = await userModel.create(user);
-    res.send(result);
+    res.send({
+        ok: true,
+        error: null,
+        data: result
+    });
 
 })
 
