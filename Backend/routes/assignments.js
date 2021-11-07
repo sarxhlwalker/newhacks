@@ -8,7 +8,7 @@ const assModel = require("../models/assignments");
 const funcs = require("../funcs.js");
 
 const mongoose = require("mongoose");
-const { presets } = require("../../App/babel.config");
+const {presets} = require("../../App/babel.config");
 
 /*
  * Create an assignment for a group
@@ -17,12 +17,12 @@ const { presets } = require("../../App/babel.config");
  */
 router.post('/create', async function (req, res, next) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({ sid: sid });
+    let resUser = await userModel.findOne({sid: sid});
     if (!resUser) {
         res.send({
             ok: false,
             error: "Invalid sid",
-            data: { sid: sid },
+            data: {sid: sid},
         });
     } else {
         // User is valid
@@ -35,7 +35,7 @@ router.post('/create', async function (req, res, next) {
             });
         } else {
             // Group is now valid
-            let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
+            let groupFind = await groupModel.findOne({groupId: req.body.groupId});
             let members = JSON.parse(groupFind.members);
             if (!members.includes(resUser.id)) {
                 res.send({
@@ -47,11 +47,11 @@ router.post('/create', async function (req, res, next) {
                 // User is in the group
                 // Validate post data
                 let asId = funcs.generateTextId(6);
-                let repeats = await assModel.findOne({ assignmentId: asId });
+                let repeats = await assModel.findOne({assignmentId: asId});
 
                 while (repeats) {
                     asId = funcs.generateTextId(6);
-                    repeats = await assModel.findOne({ assignmentId: asId });
+                    repeats = await assModel.findOne({assignmentId: asId});
                 }
 
                 let assignment = {
@@ -79,13 +79,13 @@ router.post('/create', async function (req, res, next) {
                     curr_ass.push(assignment);
 
                     let res2 = await groupModel.updateOne(
-                        { groupId: groupFind.groupId },
-                        { assignments: JSON.stringify(curr_ass) }
+                        {groupId: groupFind.groupId},
+                        {assignments: JSON.stringify(curr_ass)}
                     );
                     res.send({
                         ok: true,
                         error: null,
-                        data: { result, res2 },
+                        data: {result, res2},
                     });
                 }
             }
@@ -100,12 +100,12 @@ router.post('/create', async function (req, res, next) {
  */
 router.post('/get', async function (req, res, next) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({ sid: sid });
+    let resUser = await userModel.findOne({sid: sid});
     if (!resUser) {
         res.send({
             ok: false,
             error: "Invalid sid",
-            data: { sid: sid },
+            data: {sid: sid},
         });
     } else {
         if (!funcs.validateGroup(req.body.groupId)) {
@@ -115,7 +115,7 @@ router.post('/get', async function (req, res, next) {
                 data: null,
             });
         } else {
-            let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
+            let groupFind = await groupModel.findOne({groupId: req.body.groupId});
             let members = JSON.parse(groupFind.members);
             if (!members.includes(resUser.id)) {
                 res.send({
@@ -135,16 +135,16 @@ router.post('/get', async function (req, res, next) {
  * Takes in sid and assignmentId
  * Returns the try to delete the assignment
  */
-router.post('/delete', async function (req, res, next){
+router.post('/delete', async function (req, res, next) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({ sid: sid });
+    let resUser = await userModel.findOne({sid: sid});
     if (!resUser) {
         res.send({
             ok: false,
             error: "Invalid sid",
-            data: { sid: sid },
+            data: {sid: sid},
         });
-    }else {
+    } else {
         // Checks Assignment Id:
         let assnRep = await assModel.findOne({assignmentId: req.body.assignmentId});
         if (!assnRep) {
@@ -161,6 +161,17 @@ router.post('/delete', async function (req, res, next){
                     error: "Group deleted",
                     data: null
                 })
+            } else {
+                let res1 = await assModel.deleteOne({assignmentId: req.body.assignmentId});
+                let new_groups = await assModel.find({groupId: group.groupId});
+                if (new_groups) {
+                    let res2 = await groupModel.updateOne({groupId: group.groupId}, {assignments: JSON.stringify(new_groups)});
+                }
+                res.send({
+                    ok: true,
+                    error: null,
+                    data: res1
+                });
             }
         }
     }
@@ -173,43 +184,43 @@ router.post('/delete', async function (req, res, next){
  */
 router.post('/mark/done', async function (req, res, next) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({ sid: sid });
+    let resUser = await userModel.findOne({sid: sid});
     if (!resUser) {
         res.send({
             ok: false,
             error: "Invalid sid",
-            data: { sid: sid },
+            data: {sid: sid},
         });
-    } else{
+    } else {
         // Checks Assignment Id:
         let assnRep = await assModel.findOne({assignmentId: req.body.assignmentId});
-        if(!assnRep){
+        if (!assnRep) {
             res.send({
                 ok: false,
                 error: "Assignment not found",
                 data: null
             })
-        }else{
+        } else {
             let group = await groupModel.findOne({groupId: assnRep.groupId});
-            if(!group){
+            if (!group) {
                 res.send({
                     ok: false,
                     error: "Group deleted",
                     data: null
                 })
-            }else{
+            } else {
                 let completed = JSON.parse(assnRep.completed);
-                if(completed.includes(resUser.id)){
+                if (completed.includes(resUser.id)) {
                     res.send({
                         ok: false,
                         error: 'Already filled',
                         data: null
                     })
-                }else{
+                } else {
                     assnRep.completed = JSON.stringify(completed.concat(resUser.id));
                     let group_assn = JSON.parse(group.assignments);
-                    for (i in group_assn){
-                        if(group_assn[i].assignmentId === assnRep.assignmentId){
+                    for (i in group_assn) {
+                        if (group_assn[i].assignmentId === assnRep.assignmentId) {
                             let ps_completed = JSON.parse(group_assn[i].completed)
                             ps_completed.push(resUser.id);
                             group_assn[i].completed = JSON.stringify(ps_completed);

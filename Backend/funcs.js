@@ -27,11 +27,11 @@ module.exports = {
         let val = re.test(String(user.email).toLowerCase());
         if (!val) errs.push("Email is invalid");
 
-        let repeat = await userModel.findOne({ email: user.email });
+        let repeat = await userModel.findOne({email: user.email});
         if (repeat) {
             errs.push("This email is already in use");
         }
-        let userRepeat = await userModel.findOne({ username: user.username });
+        let userRepeat = await userModel.findOne({username: user.username});
         if (userRepeat) {
             errs.push("Username already exists");
         }
@@ -48,7 +48,7 @@ module.exports = {
         return crypto.createHash("md5").update(password).digest("hex");
     },
     validGroup: async function (groupId) {
-        let group = await groupModel.findOne({ groupId: groupId });
+        let group = await groupModel.findOne({groupId: groupId});
         return !!group;
     },
     validateAssignment: async function (assignment) {
@@ -58,7 +58,7 @@ module.exports = {
         if (!assignment.date) errs.push("Due date cannot be empty");
 
         // Ensure the title is unique
-        let repeats = await assModel.findOne({ title: assignment.title });
+        let repeats = await assModel.findOne({title: assignment.title});
         console.log(repeats);
         if (repeats) errs.push("An assignment already exists with that name");
 

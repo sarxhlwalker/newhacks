@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var assModel = mongoose.model('assignments',{
+var assModel = mongoose.model('assignments', {
     _id: {type: String, required: true},
     assignmentId: {type: String, required: false},
     title: {type: String, required: true},

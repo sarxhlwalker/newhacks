@@ -20,12 +20,12 @@ const groupsRouter = require('./routes/groups');
 const assignmentsRouter = require('./routes/assignments');
 
 //Connect to atlas
-mongoose.connect(process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.CONNECTION_URL, {useNewUrlParser: true, useUnifiedTopology: true});
 
 const app = express();
 
 //Basic express init
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "../WebApp/static")));
 
