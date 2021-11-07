@@ -109,7 +109,7 @@ router.post('/join', async function (req, res, next) {
         } else {
             let curr_members = JSON.parse(groupFind.members);
             let curr_groups = JSON.parse(resUser.groups);
-            if (curr_members.contains(resUser.id) || curr_groups.contains(groupFind.groupId)) {
+            if (curr_members.includes(resUser.id) || curr_groups.includes(groupFind.groupId)) {
                 res.send({
                     ok: false,
                     error: 'Already in group',
