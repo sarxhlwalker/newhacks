@@ -22,7 +22,6 @@ export class Header extends React.Component<IProps, IState> {
         apiPost<RawUserSelfData>("users/data", {
             sid: sessionID,
         }).then((resp) => {
-            console.log(resp);
             this.setState({
                 userData: resp.data,
             });

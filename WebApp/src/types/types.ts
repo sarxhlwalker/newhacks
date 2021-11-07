@@ -5,7 +5,7 @@ export interface RawUserSelfData {
     lastname: string;
     email: string;
     username: string;
-    id: string;
+    id: number;
 }
 
 export interface RawGroupData {

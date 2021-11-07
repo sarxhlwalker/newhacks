@@ -4,7 +4,7 @@ import { Modal } from "../components/Modal";
 import { Header } from "../components/PageHeader";
 import { Page } from "../Page";
 import { PageView } from "../PageView";
-import { convertRawGroupData, Group, RawGroupData } from "../types/types";
+import { convertRawGroupData, Group, RawGroupData, RawUserSelfData } from "../types/types";
 import { GroupCard } from "./GroupCard";
 
 interface IProps {
@@ -16,6 +16,8 @@ interface IState {
 }
 
 class GroupsContainer extends React.Component<IProps, IState> {
+    selfDataCache: RawUserSelfData | null = null;
+
     constructor(props: IProps) {
         super(props);
 
@@ -25,18 +27,24 @@ class GroupsContainer extends React.Component<IProps, IState> {
     }
 
     reloadCardData() {
-        apiPost<{ groups: RawGroupData[] }>("groups/get", {
+        apiPost<RawUserSelfData>("users/data", {
             sid: AppStorage.assertSessionID(),
         }).then((response) => {
-            console.log(response);
-            if (response.ok) {
-                let rawGroupData = response.data!.groups;
-                let groupData = rawGroupData.map((g) => convertRawGroupData(g));
+            this.selfDataCache = response.data!;
+            console.log(response.data);
 
-                this.setState({
-                    groups: groupData,
-                });
-            }
+            apiPost<{ groups: RawGroupData[] }>("groups/get", {
+                sid: AppStorage.assertSessionID(),
+            }).then((response) => {
+                if (response.ok) {
+                    let rawGroupData = response.data!.groups;
+                    let groupData = rawGroupData.map((g) => convertRawGroupData(g));
+
+                    this.setState({
+                        groups: groupData,
+                    });
+                }
+            });
         });
     }
 
@@ -47,7 +55,9 @@ class GroupsContainer extends React.Component<IProps, IState> {
     renderGroups() {
         if (this.state.groups.length) {
             return this.state.groups.map((group) => {
-                return <GroupCard groupData={group} key={group.id}></GroupCard>;
+                let myID = this.selfDataCache!.id;
+                let amIOwner = myID === group.leaderID;
+                return <GroupCard groupData={group} isOwner={amIOwner} key={group.id}></GroupCard>;
             });
         }
 
@@ -140,10 +150,15 @@ class GroupsContainer extends React.Component<IProps, IState> {
                     >
                         Join a Group
                     </button>
-                    <button className="four columns" onClick={()=>{
-                        let modal = Modal.currentModalInstance!;
-                        modal.setBody(this.createGroupModal(modal));
-                    }}>Create a Group</button>
+                    <button
+                        className="four columns"
+                        onClick={() => {
+                            let modal = Modal.currentModalInstance!;
+                            modal.setBody(this.createGroupModal(modal));
+                        }}
+                    >
+                        Create a Group
+                    </button>
                 </span>
                 <hr></hr>
                 <div style={{ overflowY: "hidden" }}>
