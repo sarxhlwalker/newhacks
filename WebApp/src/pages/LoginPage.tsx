@@ -3,6 +3,7 @@ import { apiPost } from "../api";
 import { AlertBox } from "../components/alert";
 import { Page } from "../Page";
 import { PageView } from "../PageView";
+import { RegistrationPage } from "./RegisterPage";
 
 interface IProps {
     pageView: PageView;
@@ -56,6 +57,17 @@ class LoginContainer extends React.Component<IProps, IState> {
                 >
                     Login
                 </button>
+                <span>
+                    Don't have an account?{" "}
+                    <a
+                        href="#"
+                        onClick={() => {
+                            this.props.pageView.transitionToPage(RegistrationPage);
+                        }}
+                    >
+                        Create an Account
+                    </a>
+                </span>
             </>
         );
     }
