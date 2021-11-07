@@ -40,7 +40,7 @@ class RegistrationContainer extends React.Component<IProps, IState> {
     render() {
         return (
             <>
-                <h1>Register hoe</h1>
+                <h1>Register</h1>
                 <input placeholder="First Name" type="text" ref={this.firstnameRef}></input>
                 <input placeholder="Last Name" type="text" ref={this.lastnameRef}></input>
                 <input placeholder="Phone Number" type="tel" ref={this.phoneNoRef}></input>

@@ -35,7 +35,7 @@ class LoginContainer extends React.Component<IProps, IState> {
     render() {
         return (
             <>
-                <h1>Login bitch</h1>
+                <h1>Login</h1>
                 <input placeholder="Username" type="text" ref={this.usernameFieldRef}></input>
                 <input placeholder="Password" type="password" ref={this.passwordFieldRef}></input>
                 {this.renderAlerts()}
@@ -52,7 +52,7 @@ class LoginContainer extends React.Component<IProps, IState> {
                             } else {
                                 let sessionId = (response.data as any).sid;
                                 AppStorage.setSessionID(sessionId);
-                                
+
                                 this.props.pageView.transitionToPage(GroupsPage);
                             }
                         });
