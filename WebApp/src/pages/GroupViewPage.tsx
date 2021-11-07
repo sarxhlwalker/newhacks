@@ -1,6 +1,5 @@
-import React, { StrictMode } from "react";
-import { apiGet, apiPost } from "../api";
-import { AlertBox } from "../components/alert";
+import React from "react";
+import { apiPost } from "../api";
 import { Modal } from "../components/Modal";
 import { Header } from "../components/PageHeader";
 import { UserCard } from "../components/UserCard";
@@ -162,7 +161,19 @@ class GroupViewContainer extends React.Component<IProps, IState> {
                                 return;
                             }
 
-                            console.log(dateTimestamp);
+                            apiPost("assignments/create", {
+                                sid: AppStorage.assertSessionID(),
+                                groupId: this.props.groupId,
+                                date: dateTimestamp,
+                                title: title,
+                                description: description,
+                            }).then(response=>{
+                                if (response.ok) {
+                                    setErr(response.error!);
+                                } else{
+                                    modal.close();
+                                }
+                            });
                         }}
                     >
                         Create
