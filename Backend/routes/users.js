@@ -12,7 +12,6 @@ const mongoose = require("mongoose");
  * Otherwise sends back just the number 404
  */
 router.post("/login", async function (req, res, next) {
-    console.log(req.body);
     let user = await userModel.findOne({
         username: req.body.username,
         password: funcs.md5password(req.body.password),
@@ -41,7 +40,6 @@ router.post("/login", async function (req, res, next) {
 router.post('/lookup', async function(req, res, next){
    let id = '' +req.body.id;
    let resUser = await userModel.findOne({ id: id.toString() });
-   console.log(resUser);
     if (resUser) {
         res.send({
             ok: true,
@@ -82,7 +80,6 @@ router.post("/save", async function (req, res, next) {
         id_repeats = await userModel.findOne({id: ps_id});
     }
 
-    console.log(ps_id);
     let user = {
         _id: new mongoose.Types.ObjectId(),
         id: ps_id,
@@ -91,6 +88,7 @@ router.post("/save", async function (req, res, next) {
         password: req.body.password,
         firstname: req.body.firstname,
         lastname: req.body.lastname,
+        phone: req.body.phonenumber,
         email: req.body.email,
         groups: JSON.stringify([]),
     };

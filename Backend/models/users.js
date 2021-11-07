@@ -8,6 +8,7 @@ var userModel = mongoose.model('users',{
     lastname: {type: String, required: true},
     password: {type: String, required: true},
     email: {type: String, required: true},
+    phone: {type: String, required: true},
     groups: {type: String,  required: true}
 });
 module.exports = userModel;
