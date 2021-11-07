@@ -131,12 +131,103 @@ router.post('/get', async function (req, res, next) {
 });
 
 /*
+ * Delete assignment
+ * Takes in sid and assignmentId
+ * Returns the try to delete the assignment
+ */
+router.post('/delete', async function (req, res, next){
+    let sid = req.body.sid;
+    let resUser = await userModel.findOne({ sid: sid });
+    if (!resUser) {
+        res.send({
+            ok: false,
+            error: "Invalid sid",
+            data: { sid: sid },
+        });
+    }else {
+        // Checks Assignment Id:
+        let assnRep = await assModel.findOne({assignmentId: req.body.assignmentId});
+        if (!assnRep) {
+            res.send({
+                ok: false,
+                error: "Assignment not found",
+                data: null
+            })
+        } else {
+            let group = await groupModel.findOne({groupId: assnRep.groupId});
+            if (!group) {
+                res.send({
+                    ok: false,
+                    error: "Group deleted",
+                    data: null
+                })
+            }
+        }
+    }
+});
+
+/*
  * Mark assignment as done
  * Takes in sid and assignmentId
  * Returns the try to update the completed for the assignment
  */
 router.post('/mark/done', async function (req, res, next) {
+    let sid = req.body.sid;
+    let resUser = await userModel.findOne({ sid: sid });
+    if (!resUser) {
+        res.send({
+            ok: false,
+            error: "Invalid sid",
+            data: { sid: sid },
+        });
+    } else{
+        // Checks Assignment Id:
+        let assnRep = await assModel.findOne({assignmentId: req.body.assignmentId});
+        if(!assnRep){
+            res.send({
+                ok: false,
+                error: "Assignment not found",
+                data: null
+            })
+        }else{
+            let group = await groupModel.findOne({groupId: assnRep.groupId});
+            if(!group){
+                res.send({
+                    ok: false,
+                    error: "Group deleted",
+                    data: null
+                })
+            }else{
+                let completed = JSON.parse(assnRep.completed);
+                if(completed.includes(resUser.id)){
+                    res.send({
+                        ok: false,
+                        error: 'Already filled',
+                        data: null
+                    })
+                }else{
+                    assnRep.completed = JSON.stringify(completed.concat(resUser.id));
+                    let group_assn = JSON.parse(group.assignments);
+                    for (i in group_assn){
+                        if(group_assn[i].assignmentId === assnRep.assignmentId){
+                            let ps_completed = JSON.parse(group_assn[i].completed)
+                            ps_completed.push(resUser.id);
+                            group_assn[i].completed = JSON.stringify(ps_completed);
+                        }
+                    }
+                    group.assignments = JSON.stringify(group_assn);
 
+                    let res1 = await assModel.updateOne({assignmentId: assnRep.assignmentId}, {completed: assnRep.completed});
+                    let res2 = await groupModel.updateOne({groupId: assnRep.groupId}, {assignments: group.assignments});
+                    res.send({
+                        ok: true,
+                        error: null,
+                        data: {res1, res2}
+                    });
+                }
+            }
+        }
+    }
 });
 
 module.exports = router;
