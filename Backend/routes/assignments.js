@@ -15,7 +15,7 @@ const { presets } = require("../../App/babel.config");
  * Takes in sid, groupId, due-date (date [as an int in unix timestamp]), title and description,
  * Returns result of trying to add assignments to group
  */
-router.post("/create", async function (req, res, next) {
+router.post('/create', async function (req, res, next) {
     let sid = req.body.sid;
     let resUser = await userModel.findOne({ sid: sid });
     if (!resUser) {
@@ -40,9 +40,9 @@ router.post("/create", async function (req, res, next) {
             if (!members.includes(resUser.id)) {
                 res.send({
                     ok: false,
-                    error: "Not in group",
-                    data: null,
-                });
+                    error: 'Not in group',
+                    data: null
+                })
             } else {
                 // User is in the group
                 // Validate post data
@@ -98,7 +98,7 @@ router.post("/create", async function (req, res, next) {
  * Requires sid and groupId
  * Returns list of assignment objects
  */
-router.post("/get", async function (req, res, next) {
+router.post('/get', async function (req, res, next) {
     let sid = req.body.sid;
     let resUser = await userModel.findOne({ sid: sid });
     if (!resUser) {
@@ -120,14 +120,23 @@ router.post("/get", async function (req, res, next) {
             if (!members.includes(resUser.id)) {
                 res.send({
                     ok: false,
-                    error: "Not in group",
-                    data: null,
+                    error: 'Not in group',
+                    data: null
                 });
             } else {
                 //
             }
         }
     }
+});
+
+/*
+ * Mark assignment as done
+ * Takes in sid and assignmentId
+ * Returns the try to update the completed for the assignment
+ */
+router.post('/mark/done', async function (req, res, next) {
+
 });
 
 module.exports = router;
