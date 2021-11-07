@@ -64,8 +64,6 @@ export class PageView extends React.Component<IProps, IState> {
     animationLoop() {
         const deltaTime = this.animationSpeed / 1000;
 
-        let currPage = this.getCurrentPageInstance();
-
         if (this._transition == 1) {
             let scrollX = this.state._scrollX;
 
@@ -91,8 +89,6 @@ export class PageView extends React.Component<IProps, IState> {
                 //this._transition = 0;
             }
         }
-
-        console.log(this._transition, this.state._scrollX);
     }
 
     transitionToPage(toPage: new (props: any) => Page) {

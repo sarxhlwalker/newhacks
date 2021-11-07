@@ -1,10 +1,18 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import { apiGet, apiPost } from "../api";
 import { AlertBox } from "../components/alert";
+import { Modal } from "../components/Modal";
 import { Header } from "../components/PageHeader";
+import { UserCard } from "../components/UserCard";
 import { Page } from "../Page";
 import { PageView } from "../PageView";
-import { convertRawGroupData, Group, RawGroupData, RawUserSelfData } from "../types/types";
+import {
+    convertRawGroupData,
+    Group,
+    RawGroupData,
+    RawUserLookupData,
+    RawUserSelfData,
+} from "../types/types";
 import { GroupsPage } from "./GroupsPage";
 import { RegistrationPage } from "./RegisterPage";
 
@@ -15,6 +23,7 @@ interface IProps {
 
 interface IState {
     groupData: Group | null;
+    userList: RawUserLookupData[];
 }
 
 class GroupViewContainer extends React.Component<IProps, IState> {
@@ -25,7 +34,146 @@ class GroupViewContainer extends React.Component<IProps, IState> {
 
         this.state = {
             groupData: null,
+            userList: [],
         };
+    }
+
+    renderAssignmentList() {
+        let groupData = this.state.groupData!;
+
+        if (groupData.assignments.length) {
+            return <div></div>;
+        } else {
+            return <span className="diminished">No assignments yet</span>;
+        }
+    }
+
+    _parseTimeString(timeStr: string) {
+        /*
+            Parses a time string into a number of milliseconds
+            from 12:00 AM of that day. Will throw an error as
+            a string message, if there was a problem.
+        */
+
+        // Lower case, remove spaces
+        timeStr = timeStr.toLowerCase().replace(/ /g, "");
+
+        // match time to regex
+        if (!timeStr.match(/\d+:\d+(am|pm)/)) throw "Invalid time string (must be AM/PM time)";
+
+        // AM or PM ?
+        let pm = timeStr.includes("pm");
+
+        // parse time
+        let hhmm: string[] = timeStr.match(/\d+/g)!;
+        let [hhStr, mmStr] = hhmm;
+
+        let hh = Number.parseInt(hhStr);
+        let mm = Number.parseInt(mmStr);
+
+        if (hh <= 0 || hh > 12) throw "Invalid time string (hh must be in [1, 12])";
+
+        // makes math easier
+        if (hh == 12) hh = 0;
+
+        // add pm
+        if (pm) hh += 12;
+
+        const SEC = 1000;
+        const MIN = 60 * SEC;
+        const HR = 60 * MIN;
+
+        return hh * HR + mm * MIN;
+    }
+
+    createAssigmentModal() {
+        let modal = Modal.currentModalInstance!;
+        let titleInput = React.createRef<HTMLInputElement>();
+        let descInput = React.createRef<HTMLTextAreaElement>();
+        let dateInput = React.createRef<HTMLInputElement>();
+        let timeInput = React.createRef<HTMLInputElement>();
+        let errorMsg = React.createRef<HTMLSpanElement>();
+
+        modal.setPopup(
+            <div>
+                <h1>Create Assignment</h1>
+                <hr></hr>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                    }}
+                >
+                    <input placeholder="Assignment Name" type="text" ref={titleInput}></input>
+                    <textarea
+                        placeholder="Description (Optional)"
+                        style={{
+                            resize: "none",
+                            height: "10em",
+                        }}
+                        cols={100}
+                        ref={descInput}
+                    ></textarea>
+                    <span
+                        className="row"
+                        style={{
+                            textAlign: "left",
+                        }}
+                    >
+                        <input type="date" ref={dateInput}></input>{" "}
+                        <input
+                            type="text"
+                            placeholder="Time (Default 11:59 PM)"
+                            ref={timeInput}
+                        ></input>
+                    </span>
+                    <button
+                        onClick={() => {
+                            let title = titleInput.current!.value;
+                            let description = descInput.current!.value;
+                            let date = dateInput.current!.valueAsDate;
+                            let timeStr = timeInput.current!.value || "11:59pm";
+
+                            let setErr = (err: string) => {
+                                errorMsg.current!.innerText = "Error: " + err;
+                            };
+
+                            // Parse and validate date and time
+
+                            if (date === null) {
+                                setErr("Invalid date");
+                                return;
+                            }
+
+                            let dateTimestamp = date.getTime();
+                            let timeOffset;
+
+                            try {
+                                timeOffset = this._parseTimeString(timeStr);
+                            } catch (err) {
+                                setErr(err as string);
+                                return;
+                            }
+
+                            dateTimestamp += timeOffset;
+
+                            if (dateTimestamp < Date.now()) {
+                                setErr("Date is set in the past");
+                                return;
+                            }
+
+                            console.log(dateTimestamp);
+                        }}
+                    >
+                        Create
+                    </button>
+                    <br />
+                    <div style={{ textAlign: "left" }}>
+                        <span ref={errorMsg} style={{ color: "#E53935" }}></span>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     _renderLoading() {
@@ -41,6 +189,38 @@ class GroupViewContainer extends React.Component<IProps, IState> {
         return (
             <>
                 <h2>{groupData.name}</h2>
+                <hr />
+                <div className="row">
+                    <div className="four columns">
+                        {this.state.userList.length ? (
+                            this.state.userList.map((m) => (
+                                <UserCard
+                                    userData={m}
+                                    groupData={groupData}
+                                    myId={this.selfDataCache!.id}
+                                    key={m.username}
+                                ></UserCard>
+                            ))
+                        ) : (
+                            <span className="diminished">This group has no members</span>
+                        )}
+                    </div>
+                    <div className="eight columns assignments-list">
+                        <h3>Assigments</h3>
+                        <span className="row">
+                            <button
+                                onClick={() => {
+                                    this.createAssigmentModal();
+                                }}
+                            >
+                                Create Assigment
+                            </button>
+                        </span>
+                        <hr></hr>
+                        {this.renderAssignmentList()}
+                    </div>
+                </div>
+                <hr />
                 <a
                     href="#"
                     onClick={() => {
@@ -53,22 +233,52 @@ class GroupViewContainer extends React.Component<IProps, IState> {
         );
     }
 
+    amIOwner() {
+        return this.state.groupData?.leaderID === this.selfDataCache!.id;
+    }
+
     componentDidMount() {
+        // Do not read this function.
+
+        // Fetch self user data
         apiPost<RawUserSelfData>("users/data", {
             sid: AppStorage.assertSessionID(),
         }).then((response) => {
             this.selfDataCache = response.data!;
-            console.log(response.data);
 
+            // Then, fetch group data
             apiPost<{ groups: RawGroupData[] }>("groups/get", {
                 sid: AppStorage.assertSessionID(),
             }).then((response) => {
                 if (response.ok) {
-                    let rawGroupData = response.data!.groups;
-                    let groupData = rawGroupData.map((g) => convertRawGroupData(g));
-                    console.log(groupData);
+                    let rawGroupData = response.data!;
+                    let groupData = rawGroupData.groups.map((g) => convertRawGroupData(g));
+                    let thisGroup = groupData.filter((g) => g.id === this.props.groupId)[0];
+
                     this.setState({
-                        groupData: groupData.filter((g) => g.id === this.props.groupId)[0],
+                        groupData: thisGroup,
+                    });
+
+                    // Then, fetch group member data
+                    (async () => {
+                        let userData: RawUserLookupData[] = [];
+
+                        for (let userID of thisGroup.memberIDs) {
+                            let resp = await apiPost<RawUserLookupData>("users/lookup", {
+                                id: userID,
+                            });
+
+                            if (resp.ok) {
+                                userData.push(resp.data!);
+                            }
+                        }
+
+                        return userData;
+                    })().then((userList) => {
+                        // Then, update state
+                        this.setState({
+                            userList: userList,
+                        });
                     });
                 }
             });
@@ -93,6 +303,7 @@ export class GroupViewPage extends Page {
                         groupId={GroupViewPage.groupId}
                     ></GroupViewContainer>
                 </div>
+                <Modal></Modal>
             </>
         );
     }

@@ -3,6 +3,7 @@ import { apiPost } from "../api";
 import { GroupViewPage } from "../pages/GroupViewPage";
 import { PageView } from "../PageView";
 import { Group, RawUserLookupData, RawUserSelfData } from "../types/types";
+import { UserCard } from "./UserCard";
 
 interface IProps {
     groupData: Group;
@@ -22,39 +23,6 @@ export class GroupCard extends React.Component<IProps, IState> {
         this.state = {
             userList: [],
         };
-    }
-
-    renderUserCard(userData: RawUserLookupData) {
-        let userIsMe = userData.username == this.props.selfDataCache.username;
-        return (
-            <div className="user-card" key={userData.username}>
-                <div className="about">
-                    <span className="name">
-                        {userData.firstname} {userData.lastname}
-                    </span>
-                </div>
-                <span className="controls">
-                    {userIsMe || !this.props.amIOwner ? (
-                        ""
-                    ) : (
-                        <a
-                            href="#"
-                            onClick={() => {
-                                apiPost("groups/kick", {
-                                    sid: AppStorage.assertSessionID(),
-                                    groupId: this.props.groupData.id,
-                                    userId: userData.id,
-                                }).then(() => {
-                                    window.location.reload();
-                                });
-                            }}
-                        >
-                            Kick
-                        </a>
-                    )}
-                </span>
-            </div>
-        );
     }
 
     componentDidMount() {
@@ -118,7 +86,14 @@ export class GroupCard extends React.Component<IProps, IState> {
                 <hr />
                 <div>
                     {this.state.userList.length ? (
-                        this.state.userList.map((m) => this.renderUserCard(m))
+                        this.state.userList.map((m) => (
+                            <UserCard
+                                userData={m}
+                                groupData={group}
+                                myId={this.props.selfDataCache!.id}
+                                key={m.username}
+                            ></UserCard>
+                        ))
                     ) : (
                         <span className="diminished">This group has no members</span>
                     )}
