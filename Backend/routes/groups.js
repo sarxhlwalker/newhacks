@@ -22,10 +22,16 @@ router.post('/get', async function (req, res, next) {
         });
     } else {
         let groups = JSON.parse(resUser.groups);
+        let obj_groups = []
+        console.log(groups);
+        for (group of groups){
+            let x_group = await groupModel.findOne({groupId: group});
+            obj_groups.push(x_group);
+        }
         res.send({
             ok: true,
             error: null,
-            data: {groups: groups}
+            data: {groups: obj_groups}
         });
     }
 });
@@ -123,6 +129,47 @@ router.post('/join', async function (req, res, next) {
 });
 
 /*
+ * Removes members from a group if the user requesting to do so is the leader
+ * Takes in sid, groupId and username to kick
+ */
+router.post('/kick', async function(req, res, next){
+    let sid = req.body.sid;
+    let resUser = await userModel.findOne({sid: sid});
+    if (!resUser) {
+        res.send({
+            ok: false,
+            error: 'Invalid sid',
+            data: {sid: sid}
+        });
+    } else{
+        let groupFind = await groupModel.findOne({groupId: req.body.groupId});
+        if (!groupFind) {
+            res.send({
+                ok: false,
+                error: 'Group not found',
+                data: null
+            });
+        } else {
+            // Confirm that the user trying to delete the group is the leader
+            if(!groupFind.leaderId === resUser.id){
+                res.send({
+                    ok: false,
+                    error: 'Not Group Leader',
+                    data: null
+                });
+            }else{
+                // Check to see whether username exists in group
+                let group_members = JSON.parse(groupFind.members);
+                for(member in group_members){
+
+                }
+            }
+        }
+    }
+});
+
+
+/*
  * Delete a group: takes in the groupId and sid and returns the result of trying to delete the group.
  * It then removes the groupId from every single member
  */
@@ -154,6 +201,7 @@ router.post('/delete', async function(req,res,next){
             }else{
                 /*
                  * First kick members from the group
+                 * Then delete the group itself
                  */
             }
         }
