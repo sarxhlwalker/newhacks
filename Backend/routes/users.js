@@ -35,6 +35,32 @@ router.post("/login", async function (req, res, next) {
     }
 });
 
+/*
+ * Get the user firstname, lastname and username from userid
+ */
+router.post('/lookup', async function(req, res, next){
+   let id = req.body.id;
+   let resUser = await userModel.findOne({ id: id });
+    if (resUser) {
+        res.send({
+            ok: true,
+            error: null,
+            data: {
+                firstname: resUser.firstname,
+                lastname: resUser.lastname,
+                email: resUser.email,
+                username: resUser.username
+            },
+        });
+    } else {
+        res.send({
+            ok: false,
+            error: "Invalid id",
+            data: null,
+        });
+    }
+});
+
 // Add a new user
 /*
  * Save the user data if it's valid, after doing server side validation.
