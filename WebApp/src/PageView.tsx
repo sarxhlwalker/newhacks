@@ -7,14 +7,15 @@ interface IProps {
 
 interface IState {
     _currentPage: JSX.Element;
+    _scrollX: number;
 }
 
 export class PageView extends React.Component<IProps, IState> {
     // Page scroll animation state variables
     targetScrollX = 0;
-    playing = false;
-    scrollSpeed = 3000; // pixels/sec
-    animationSpeed = 25; // ms between frames
+    _transition = 0;
+    scrollSpeed = window.innerWidth / 0.33; // pixels/sec
+    animationSpeed = 20; // ms between frames
 
     // Animation loop interval; will be set
     // on component mount
@@ -31,6 +32,7 @@ export class PageView extends React.Component<IProps, IState> {
 
         this.state = {
             _currentPage: this._instantiatePageInstance(props.initialPage),
+            _scrollX: 0,
         };
     }
 
@@ -64,29 +66,51 @@ export class PageView extends React.Component<IProps, IState> {
 
         let currPage = this.getCurrentPageInstance();
 
-        if (this.playing) {
-            let scrollX = currPage.state._scrollX;
+        if (this._transition == 1) {
+            let scrollX = this.state._scrollX;
 
-            currPage.setState({
+            this.setState({
                 _scrollX: scrollX + this.scrollSpeed * deltaTime,
             });
+
+            if (this.state._scrollX >= window.innerWidth+100) {
+                this._mountPage(this.nextPage!);
+                this._transition = 2;
+            }
+        } else if (this._transition == 2) {
+            let scrollX = this.state._scrollX;
+
+            this.setState({
+                _scrollX: scrollX - this.scrollSpeed * deltaTime,
+            });
+
+            if (this.state._scrollX <= 0) {
+                this.setState({
+                    _scrollX: 0,
+                });
+                //this._transition = 0;
+            }
         }
 
-        if (currPage.state._scrollX >= window.innerWidth) {
-            currPage.setState({
-                _scrollX: 0,
-            });
-            this._mountPage(this.nextPage!);
-            this.playing = false;
-        }
+        console.log(this._transition, this.state._scrollX);
     }
 
     transitionToPage(toPage: new (props: any) => Page) {
-        this.playing = true;
+        this._transition = 1;
         this.nextPage = toPage;
     }
 
     render() {
-        return <div>{this.state._currentPage}</div>;
+        return (
+            <div
+                style={{
+                    left: -this.state._scrollX + "px",
+                    width: "100%",
+                    position: "absolute",
+                }}
+            >
+                {this.state._currentPage}
+            </div>
+        );
     }
 }
