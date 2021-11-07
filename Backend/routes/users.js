@@ -83,10 +83,10 @@ router.post("/save", async function (req, res, next) {
 /*
  * Get user front data
  */
-router.post('/data', async function(req, res, next){
+router.post("/data", async function (req, res, next) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({sid: sid});
-    if(resUser){
+    let resUser = await userModel.findOne({ sid: sid });
+    if (resUser) {
         res.send({
             ok: true,
             error: null,
@@ -94,15 +94,16 @@ router.post('/data', async function(req, res, next){
                 firstname: resUser.firstname,
                 lastname: resUser.lastname,
                 email: resUser.email,
-                username: resUser.username
-            }
-        })
-    }else{
+                username: resUser.username,
+                id: resUser.id,
+            },
+        });
+    } else {
         res.send({
             ok: false,
-            error: 'Invalid sid',
-            data: null
-        })
+            error: "Invalid sid",
+            data: null,
+        });
     }
 });
 

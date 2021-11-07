@@ -1,6 +1,6 @@
 // As represented in and returned from the server
 
-export interface RawUserData {
+export interface RawUserSelfData {
     firstname: string;
     lastname: string;
     email: string;
