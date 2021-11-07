@@ -10,7 +10,9 @@ export function App() {
     let sid = AppStorage.getSessionID();
     if (sid) {
         apiPost("users/data", { sid: sid }).then((resp) => {
-            if (!resp.ok) window.location.reload();
+            if (!resp.ok) {
+                AppStorage.logout();
+            }
         });
     }
     return <PageView initialPage={isLoggedIn ? GroupsPage : LoginPage} />;
