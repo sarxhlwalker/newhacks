@@ -14,10 +14,22 @@ export function apiPost<T>(endpoint: string, body: any) {
 }
 
 async function _apiCall<T>(endpoint: string, method: string, body: any) {
-    let response = await fetch(window.location.origin + "/" + endpoint, {
-        method: method,
-        body: JSON.stringify(body),
-    });
+    let response;
+    let httpStatus;
+    try {
+        response = await fetch(window.location.origin + "/" + endpoint, {
+            method: method,
+            body: JSON.stringify(body),
+        });
+        httpStatus = response.status;
+    } catch (err) {
+        return {
+            ok: false,
+            error: "An unexpected error has occurred",
+            httpStatus: httpStatus,
+            data: null,
+        };
+    }
 
     let jsonText = await response.text();
     let ok = response.ok;
