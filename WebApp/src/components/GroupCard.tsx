@@ -1,11 +1,14 @@
 import React, { useImperativeHandle } from "react";
 import { apiPost } from "../api";
+import { GroupViewPage } from "../pages/GroupViewPage";
+import { PageView } from "../PageView";
 import { Group, RawUserLookupData, RawUserSelfData } from "../types/types";
 
 interface IProps {
     groupData: Group;
     amIOwner: boolean; // is this user the owner of this group?
     selfDataCache: RawUserSelfData;
+    pageView: PageView;
 }
 
 interface IState {
@@ -76,6 +79,10 @@ export class GroupCard extends React.Component<IProps, IState> {
         });
     }
 
+    computeTitleFontSize(title: string) {
+        return;
+    }
+
     render() {
         let group = this.props.groupData;
         let groupCard = React.createRef<HTMLDivElement>();
@@ -85,11 +92,11 @@ export class GroupCard extends React.Component<IProps, IState> {
                 className="group-card"
                 onClick={(ev) => {
                     if (ev.target !== groupCard.current) return;
-                    this.props;
+                    this.props.pageView.transitionToPage(GroupViewPage);
                 }}
                 ref={groupCard}
             >
-                <h3>{group.name}</h3>
+                <h3 style={{ fontSize: this.computeTitleFontSize(group.name) }}>{group.name}</h3>
                 Group Code: <code>{group.id}</code>
                 <hr />
                 <div>

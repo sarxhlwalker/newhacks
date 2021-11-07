@@ -1,6 +1,7 @@
 import React from "react";
 import { apiPost } from "../api";
 import { AlertBox } from "../components/alert";
+import { Header } from "../components/PageHeader";
 import { Page } from "../Page";
 import { PageView } from "../PageView";
 import { GroupsPage } from "./GroupsPage";
@@ -28,12 +29,15 @@ class GroupViewContainer extends React.Component<IProps, IState> {
     }
 }
 
-export class GroupViewPagePage extends Page {
+export class GroupViewPage extends Page {
     pageRender() {
         return (
-            <div className="login-page container">
-                <GroupViewContainer pageView={this.props.pageView}></GroupViewContainer>
-            </div>
+            <>
+                <Header></Header>
+                <div className="login-page container">
+                    <GroupViewContainer pageView={this.props.pageView}></GroupViewContainer>
+                </div>
+            </>
         );
     }
 }
