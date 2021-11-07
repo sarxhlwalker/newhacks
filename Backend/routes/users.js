@@ -1,9 +1,9 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const funcs = require('../funcs.js')
+const funcs = require("../funcs.js");
 
-const userModel = require('../models/users');
+const userModel = require("../models/users");
 const mongoose = require("mongoose");
 
 // Check login post
@@ -11,24 +11,26 @@ const mongoose = require("mongoose");
  * Sends back the apid I expect in future api calls if successfully logs in
  * Otherwise sends back just the number 404
  */
-router.post('/login', async function (req, res, next) {
+router.post("/login", async function (req, res, next) {
     console.log(req.body);
-    let user = await userModel.findOne({ username: req.body.username, password: req.body.password });
+    let user = await userModel.findOne({
+        username: req.body.username,
+        password: req.body.password,
+    });
     if (user) {
-        let query = {username: req.body.username, password: req.body.password};
-        
-        let result = await userModel.updateOne(query, {apid: req.sessionID});
+        let query = { username: req.body.username, password: req.body.password };
+
+        let result = await userModel.updateOne(query, { apid: req.sessionID });
         res.send({
             ok: true,
             error: null,
-            data: [{sid: req.sessionID, result: result}] // List of sid and result of trying to update the req
+            data: [{ sid: req.sessionID, result: result }], // List of sid and result of trying to update the req
         });
     } else {
-        res.status(404);
         res.send({
             ok: true,
-            error: 'Could not find user',
-            data: null
+            error: "Incorrect username or password.",
+            data: null,
         });
     }
 });
@@ -37,9 +39,9 @@ router.post('/login', async function (req, res, next) {
 /*
  * Save the user
  */
-router.post('/save', async function (req, res, next) {
-    let count = await userModel.countDocuments({}) + 1;
-    console.log(req.body)
+router.post("/save", async function (req, res, next) {
+    let count = (await userModel.countDocuments({})) + 1;
+    console.log(req.body);
     // A very stupid way to find a random unique string id that can be used as an api key
     let myApid = funcs.generateTextId(32);
     let repeats = await userModel.findOne({ apid: myApid });
@@ -47,8 +49,6 @@ router.post('/save', async function (req, res, next) {
         myApid = funcs.generateTextId(32);
         repeats = await userModel.findOne({ apid: myApid });
     }
-
-
 
     let user = {
         _id: new mongoose.Types.ObjectId(),
@@ -59,25 +59,24 @@ router.post('/save', async function (req, res, next) {
         firstname: req.body.firstname,
         lastname: req.body.lastname,
         email: req.body.email,
-        groups: JSON.stringify([])
-    }
+        groups: JSON.stringify([]),
+    };
 
     errors = await funcs.formValidation(user);
-    if (errors.length > 0){
+    if (errors.length > 0) {
         res.send({
             ok: false,
             error: errors,
-            data: null
-        })
-    }else{
+            data: null,
+        });
+    } else {
         let result = await userModel.create(user);
         res.send({
             ok: true,
             error: null,
-            data: result
+            data: result,
         });
     }
+});
 
-})
-
-module.exports = router
+module.exports = router;
