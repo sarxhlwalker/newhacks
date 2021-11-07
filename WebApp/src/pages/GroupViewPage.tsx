@@ -1,11 +1,13 @@
 import React from "react";
 import { apiPost } from "../api";
+import { AssignmentCard } from "../components/AssignmentCard";
 import { Modal } from "../components/Modal";
 import { Header } from "../components/PageHeader";
 import { UserCard } from "../components/UserCard";
 import { Page } from "../Page";
 import { PageView } from "../PageView";
 import {
+    convertRawAssignment,
     convertRawGroupData,
     Group,
     RawGroupData,
@@ -13,7 +15,10 @@ import {
     RawUserSelfData,
 } from "../types/types";
 import { GroupsPage } from "./GroupsPage";
-import { RegistrationPage } from "./RegisterPage";
+
+const SEC = 1000;
+const MIN = 60 * SEC;
+const HR = 60 * MIN;
 
 interface IProps {
     pageView: PageView;
@@ -39,9 +44,18 @@ class GroupViewContainer extends React.Component<IProps, IState> {
 
     renderAssignmentList() {
         let groupData = this.state.groupData!;
+        let rawAssignments = [...groupData.assignments].sort((a, b) => a.date - b.date);
+
+        let assignments = rawAssignments.map((m) => convertRawAssignment(m));
 
         if (groupData.assignments.length) {
-            return <div></div>;
+            return (
+                <>
+                    {assignments.map((a) => (
+                        <AssignmentCard assignment={a} key={a.id}></AssignmentCard>
+                    ))}
+                </>
+            );
         } else {
             return <span className="diminished">No assignments yet</span>;
         }
@@ -78,14 +92,10 @@ class GroupViewContainer extends React.Component<IProps, IState> {
         // add pm
         if (pm) hh += 12;
 
-        const SEC = 1000;
-        const MIN = 60 * SEC;
-        const HR = 60 * MIN;
-
         return hh * HR + mm * MIN;
     }
 
-    createAssigmentModal() {
+    createAssignmentModal() {
         let modal = Modal.currentModalInstance!;
         let titleInput = React.createRef<HTMLInputElement>();
         let descInput = React.createRef<HTMLTextAreaElement>();
@@ -144,7 +154,8 @@ class GroupViewContainer extends React.Component<IProps, IState> {
                                 return;
                             }
 
-                            let dateTimestamp = date.getTime();
+                            let dateTimestamp =
+                                date.getTime() + new Date().getTimezoneOffset() * MIN;
                             let timeOffset;
 
                             try {
@@ -167,10 +178,11 @@ class GroupViewContainer extends React.Component<IProps, IState> {
                                 date: dateTimestamp,
                                 title: title,
                                 description: description,
-                            }).then(response=>{
-                                if (response.ok) {
+                            }).then((response) => {
+                                if (!response.ok) {
                                     setErr(response.error!);
-                                } else{
+                                } else {
+                                    this.fetchGroupData();
                                     modal.close();
                                 }
                             });
@@ -200,9 +212,18 @@ class GroupViewContainer extends React.Component<IProps, IState> {
         return (
             <>
                 <h2>{groupData.name}</h2>
+                <a
+                    href="#"
+                    onClick={() => {
+                        this.props.pageView.transitionToPage(GroupsPage);
+                    }}
+                >
+                    Back
+                </a>
                 <hr />
                 <div className="row">
-                    <div className="four columns">
+                    <div className="four columns assignments-list-container">
+                        <h3>Members</h3>
                         {this.state.userList.length ? (
                             this.state.userList.map((m) => (
                                 <UserCard
@@ -216,36 +237,66 @@ class GroupViewContainer extends React.Component<IProps, IState> {
                             <span className="diminished">This group has no members</span>
                         )}
                     </div>
-                    <div className="eight columns assignments-list">
-                        <h3>Assigments</h3>
+                    <div className="eight columns assignments-list-container">
+                        <h3>Assignments</h3>
                         <span className="row">
                             <button
                                 onClick={() => {
-                                    this.createAssigmentModal();
+                                    this.createAssignmentModal();
                                 }}
                             >
-                                Create Assigment
+                                Create Assignment
                             </button>
                         </span>
                         <hr></hr>
-                        {this.renderAssignmentList()}
+                        <div className="assignments-list">{this.renderAssignmentList()}</div>
                     </div>
                 </div>
                 <hr />
-                <a
-                    href="#"
-                    onClick={() => {
-                        this.props.pageView.transitionToPage(GroupsPage);
-                    }}
-                >
-                    Back
-                </a>
             </>
         );
     }
 
     amIOwner() {
         return this.state.groupData?.leaderID === this.selfDataCache!.id;
+    }
+
+    fetchGroupData() {
+        apiPost<{ groups: RawGroupData[] }>("groups/get", {
+            sid: AppStorage.assertSessionID(),
+        }).then((response) => {
+            if (response.ok) {
+                let rawGroupData = response.data!;
+                let groupData = rawGroupData.groups.map((g) => convertRawGroupData(g));
+                let thisGroup = groupData.filter((g) => g.id === this.props.groupId)[0];
+
+                this.setState({
+                    groupData: thisGroup,
+                });
+
+                // Then, fetch group member data
+                (async () => {
+                    let userData: RawUserLookupData[] = [];
+
+                    for (let userID of thisGroup.memberIDs) {
+                        let resp = await apiPost<RawUserLookupData>("users/lookup", {
+                            id: userID,
+                        });
+
+                        if (resp.ok) {
+                            userData.push(resp.data!);
+                        }
+                    }
+
+                    return userData;
+                })().then((userList) => {
+                    // Then, update state
+                    this.setState({
+                        userList: userList,
+                    });
+                });
+            }
+        });
     }
 
     componentDidMount() {
@@ -256,43 +307,8 @@ class GroupViewContainer extends React.Component<IProps, IState> {
             sid: AppStorage.assertSessionID(),
         }).then((response) => {
             this.selfDataCache = response.data!;
-
             // Then, fetch group data
-            apiPost<{ groups: RawGroupData[] }>("groups/get", {
-                sid: AppStorage.assertSessionID(),
-            }).then((response) => {
-                if (response.ok) {
-                    let rawGroupData = response.data!;
-                    let groupData = rawGroupData.groups.map((g) => convertRawGroupData(g));
-                    let thisGroup = groupData.filter((g) => g.id === this.props.groupId)[0];
-
-                    this.setState({
-                        groupData: thisGroup,
-                    });
-
-                    // Then, fetch group member data
-                    (async () => {
-                        let userData: RawUserLookupData[] = [];
-
-                        for (let userID of thisGroup.memberIDs) {
-                            let resp = await apiPost<RawUserLookupData>("users/lookup", {
-                                id: userID,
-                            });
-
-                            if (resp.ok) {
-                                userData.push(resp.data!);
-                            }
-                        }
-
-                        return userData;
-                    })().then((userList) => {
-                        // Then, update state
-                        this.setState({
-                            userList: userList,
-                        });
-                    });
-                }
-            });
+            this.fetchGroupData();
         });
     }
 

@@ -24,6 +24,14 @@ export interface RawUserLookupData {
     id: string;
 }
 
+export interface RawAssignmentData {
+    title: string;
+    description: string;
+    assignmentId: string;
+    date: number;
+    completed: string;
+}
+
 // Used internally
 
 export interface Group {
@@ -32,7 +40,15 @@ export interface Group {
     leaderID: string;
     leaderName: string;
     memberIDs: string[];
-    assignments: any[];
+    assignments: RawAssignmentData[];
+}
+
+export interface Assignment {
+    id: string;
+    title: string;
+    description: string;
+    date: Date;
+    completedIDs: string[];
 }
 
 // Conversion functions
@@ -45,5 +61,15 @@ export function convertRawGroupData(data: RawGroupData): Group {
         leaderName: data.leaderName,
         memberIDs: JSON.parse(data.members),
         assignments: JSON.parse(data.assignments),
+    };
+}
+
+export function convertRawAssignment(data: RawAssignmentData): Assignment {
+    return {
+        id: data.assignmentId,
+        title: data.title,
+        description: data.description,
+        completedIDs: JSON.parse(data.completed),
+        date: new Date(data.date),
     };
 }
