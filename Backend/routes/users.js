@@ -48,7 +48,8 @@ router.post('/lookup', async function(req, res, next){
             data: {
                 firstname: resUser.firstname,
                 lastname: resUser.lastname,
-                username: resUser.username
+                username: resUser.username,
+                id: resUser.id
             },
         });
     } else {
