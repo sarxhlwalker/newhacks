@@ -20,7 +20,7 @@ router.post("/login", async function (req, res, next) {
     if (user) {
         let query = { username: req.body.username, password: funcs.md5password(req.body.password) };
 
-        let result = await userModel.updateOne(query, { apid: req.sessionID });
+        let result = await userModel.updateOne(query, { sid: req.sessionID });
         res.send({
             ok: true,
             error: null,
