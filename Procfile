@@ -1,1 +1,1 @@
-web: npm -g typescript && npm -g sass && cd WebApp && tsc && sass:static/styles && cd .. && cd Backend && node server.js
+web: npm i -g typescript && npm i -g sass && cd WebApp && tsc && sass:static/styles && cd .. && cd Backend && node server.js

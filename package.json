@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm -g typescript && npm -g sass && cd WebApp && tsc && sass:static/styles && cd .. && cd Backend && node server.js"
+    "start": "npm i -g typescript && npm i -g sass && cd WebApp && tsc && sass:static/styles && cd .. && cd Backend && node server.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
