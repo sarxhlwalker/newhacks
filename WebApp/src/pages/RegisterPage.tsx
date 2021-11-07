@@ -73,7 +73,7 @@ class RegistrationContainer extends React.Component<IProps, IState> {
                         }).then((response) => {
                             if (response.error) {
                                 this.setState({
-                                    registerStatusMessage: response.error,
+                                    registerStatusMessage: response.error[0],
                                 });
                             } else {
                                 console.log(response);
