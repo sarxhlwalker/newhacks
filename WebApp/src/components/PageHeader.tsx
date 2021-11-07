@@ -1,11 +1,11 @@
 import React from "react";
 import { apiGet, apiPost } from "../api";
-import { UserData } from "../types/users";
+import { RawUserData } from "../types/types";
 
 interface IProps {}
 
 interface IState {
-    userData: UserData | null;
+    userData: RawUserData | null;
 }
 
 export class Header extends React.Component<IProps, IState> {
@@ -19,7 +19,7 @@ export class Header extends React.Component<IProps, IState> {
 
     componentDidMount() {
         let sessionID = AppStorage.assertSessionID();
-        apiPost<UserData>("users/data", {
+        apiPost<RawUserData>("users/data", {
             sid: sessionID,
         }).then((resp) => {
             console.log(resp);

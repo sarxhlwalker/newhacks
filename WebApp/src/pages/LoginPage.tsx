@@ -50,8 +50,8 @@ class LoginContainer extends React.Component<IProps, IState> {
                                     loginStatusMessage: response.error,
                                 });
                             } else {
-                                let sessionID = (response.data as any).sid;
-                                AppStorage.setSessionID(sessionID);
+                                let sessionId = (response.data as any).sid;
+                                AppStorage.setSessionID(sessionId);
                                 console.log(response.data);
                                 this.props.pageView.transitionToPage(GroupsPage);
                             }
