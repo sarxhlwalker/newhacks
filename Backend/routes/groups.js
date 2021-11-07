@@ -109,7 +109,7 @@ router.post('/join', async function (req, res, next) {
         } else {
             let curr_members = JSON.parse(groupFind.members);
             let curr_groups = JSON.parse(resUser.groups);
-            if (resUser.id in curr_members || groupFind.groupId in curr_groups) {
+            if (curr_members.contains(resUser.id) || curr_groups.contains(groupFind.groupId)) {
                 res.send({
                     ok: false,
                     error: 'Already in group',
@@ -127,6 +127,11 @@ router.post('/join', async function (req, res, next) {
         }
     }
 });
+
+/*
+ * Leave a group
+ * Takes in sid and groupId
+ */
 
 /*
  * Removes members from a group if the user requesting to do so is the leader
@@ -160,8 +165,40 @@ router.post('/kick', async function(req, res, next){
             }else{
                 // Check to see whether username exists in group
                 let group_members = JSON.parse(groupFind.members);
-                for(member in group_members){
+                let user_found = false;
+                let userToKick = null;
+                for(member of group_members){
+                    let user = await userModel.findOne({id: member});
+                    if(user.username === req.body.username){
+                        user_found = true;
+                        userToKick = user;
+                        break;
+                    }
+                }
 
+                if(!user_found){
+                    res.send({
+                        ok: false,
+                        error: 'User not in group',
+                        data: null
+                    })
+                }else{
+                    // User found in the group to delete
+                    group_members = group_members.filter(function(value, index, arr){
+                        return value === userToKick.id
+                    });
+                    curr_groups = JSON.parse(resUser.groups);
+                    curr_groups = curr_groups.filter(function (value, index, arr){
+                        return value === userToKick.id
+                    });
+
+                    let res1 = await groupModel.updateOne({groupId: groupFind.groupId}, {members: JSON.stringify(group_members)});
+                    let res2 = await userModel.updateOne({id: userToKick.id}, {groups: JSON.stringify(curr_groups)});
+                    res.send({
+                        ok: true,
+                        error: null,
+                        data: {res1: res1, res2: res2}
+                    });
                 }
             }
         }
