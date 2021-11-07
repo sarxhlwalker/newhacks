@@ -1,0 +1,19 @@
+{
+  "name": "newhacks",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd Backend && node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarxhlwalker/newhacks.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sarxhlwalker/newhacks/issues"
+  },
+  "homepage": "https://github.com/sarxhlwalker/newhacks#readme"
+}
