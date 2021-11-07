@@ -48,6 +48,8 @@ router.post('/save', async function (req, res, next) {
         repeats = await userModel.findOne({ apid: myApid });
     }
 
+
+
     let user = {
         _id: new mongoose.Types.ObjectId(),
         id: count,
@@ -59,14 +61,22 @@ router.post('/save', async function (req, res, next) {
         email: req.body.email,
         groups: JSON.stringify([])
     }
-    let access_token = req.body.token;
 
-    let result = await userModel.create(user);
-    res.send({
-        ok: true,
-        error: null,
-        data: result
-    });
+    errors = await funcs.formValidation(user);
+    if (errors.length > 0){
+        res.send({
+            ok: false,
+            error: errors,
+            data: null
+        })
+    }else{
+        let result = await userModel.create(user);
+        res.send({
+            ok: true,
+            error: null,
+            data: result
+        });
+    }
 
 })
 
