@@ -83,7 +83,7 @@ router.post("/save", async function (req, res, next) {
 /*
  * Get user front data
  */
-router.get('/data', async function(req, res, next){
+router.post('/data', async function(req, res, next){
     let sid = req.body.sid;
     let resUser = await userModel.findOne({sid: sid});
     if(resUser){
@@ -100,7 +100,7 @@ router.get('/data', async function(req, res, next){
     }else{
         res.send({
             ok: false,
-            error: 'No user found',
+            error: 'Invalid sid',
             data: null
         })
     }
