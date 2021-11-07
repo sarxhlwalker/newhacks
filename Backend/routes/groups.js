@@ -165,8 +165,12 @@ router.post('/leave', async function(req, res, next){
                 let ug = user_groups.filter(function (value, index, arr) {
                     return value !== groupFind.groupId
                 });
-
-                let res1 = await groupModel.updateOne({groupId: groupFind.groupId}, {members: JSON.stringify(gm)});
+                let res1;
+                if (gm.length > 0){
+                    res1 = await groupModel.updateOne({groupId: groupFind.groupId}, {members: JSON.stringify(gm)});
+                }else{
+                    res1 = await groupModel.deleteOne({groupId: groupFind.groupId});
+                }
                 let res2 = await userModel.updateOne({id: resUser.id}, {groups: JSON.stringify(ug)});
                 res.send({
                     ok: true,
@@ -210,16 +214,8 @@ router.post('/kick', async function(req, res, next){
             }else{
                 // Check to see whether username exists in group
                 let group_members = JSON.parse(groupFind.members);
-                let user_found = false;
-                let userToKick = null;
-                for(member of group_members){
-                    let user = await userModel.findOne({id: member});
-                    if(user.username === req.body.username){
-                        user_found = true;
-                        userToKick = user;
-                        break;
-                    }
-                }
+                let userToKick = await userModel.findOne({id: req.body.userId});
+                let user_found = group_members.includes(userToKick.id);
 
                 if(!user_found){
                     res.send({
@@ -230,11 +226,11 @@ router.post('/kick', async function(req, res, next){
                 }else{
                     // User found in the group to delete
                     group_members = group_members.filter(function(value, index, arr){
-                        return value === userToKick.id
+                        return value !== userToKick.id
                     });
-                    curr_groups = JSON.parse(resUser.groups);
+                    let curr_groups = JSON.parse(resUser.groups);
                     curr_groups = curr_groups.filter(function (value, index, arr){
-                        return value === userToKick.id
+                        return value !== groupFind.groupId
                     });
 
                     let res1 = await groupModel.updateOne({groupId: groupFind.groupId}, {members: JSON.stringify(group_members)});
