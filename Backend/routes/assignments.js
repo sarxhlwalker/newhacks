@@ -8,6 +8,7 @@ const assModel = require("../models/assignments");
 const funcs = require("../funcs.js");
 
 const mongoose = require("mongoose");
+const {presets} = require("../../App/babel.config");
 
 
 /*
@@ -75,10 +76,14 @@ router.post('/create', async  function(req,res,next){
                     });
                 }else{
                     let result = await assModel.create(assignment);
+                    let curr_ass = JSON.parse(groupFind.assignments);
+                    curr_ass.push(assignment);
+
+                    let res2 = await groupModel.updateOne({groupId: groupFind.groupId}, {assignments: JSON.stringify(curr_ass)});
                     res.send({
                         ok: true,
                         error: null,
-                        data: result
+                        data: {result, res2}
                     });
                 }
             }
@@ -92,7 +97,35 @@ router.post('/create', async  function(req,res,next){
  * Returns list of assignment objects
  */
 router.post('/get', async function(req, res, next){
-
+    let sid = req.body.sid;
+    let resUser = await userModel.findOne({sid: sid});
+    if (!resUser) {
+        res.send({
+            ok: false,
+            error: 'Invalid sid',
+            data: {sid: sid}
+        });
+    }else{
+        if(!funcs.validateGroup(req.body.groupId)){
+            res.send({
+                ok: false,
+                error: 'Group not found',
+                data: null
+            });
+        }else{
+            let groupFind = await groupModel.findOne({groupId: req.body.groupId});
+            let members = JSON.parse(groupFind.members);
+            if(!members.includes(resUser.id)){
+                res.send({
+                   ok: false,
+                   error: 'Not in group',
+                   data: null
+                });
+            }else{
+                //
+            }
+        }
+    }
 });
 
 module.exports = router
