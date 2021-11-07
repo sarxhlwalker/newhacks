@@ -24,7 +24,7 @@ router.post("/login", async function (req, res, next) {
         res.send({
             ok: true,
             error: null,
-            data: [{ sid: req.sessionID, result: result }], // List of sid and result of trying to update the req
+            data: { sid: req.sessionID, result: result }, // sid and result of trying to update the req
         });
     } else {
         res.send({
@@ -37,7 +37,7 @@ router.post("/login", async function (req, res, next) {
 
 // Add a new user
 /*
- * Save the user
+ * Save the user data if it's valid, after doing server side validation.
  */
 router.post("/save", async function (req, res, next) {
     let count = (await userModel.countDocuments({})) + 1;
