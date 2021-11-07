@@ -77,7 +77,8 @@ class RegistrationContainer extends React.Component<IProps, IState> {
                                     registerStatusMessage: response.error[0],
                                 });
                             } else {
-                                console.log(response);
+                                let sessionID = (response.data as any).sid;
+                                AppStorage.setSessionID(sessionID);
                                 this.props.pageView.transitionToPage(GroupsPage);
                             }
                         });
