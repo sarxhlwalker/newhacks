@@ -132,6 +132,51 @@ router.post('/join', async function (req, res, next) {
  * Leave a group
  * Takes in sid and groupId
  */
+router.post('/leave', async function(req, res, next){
+    let sid = req.body.sid;
+    let resUser = await userModel.findOne({sid: sid});
+    if (!resUser) {
+        res.send({
+            ok: false,
+            error: 'Invalid sid',
+            data: {sid: sid}
+        });
+    } else{
+        // Check if user is in the specified group
+        let groupFind = await groupModel.findOne({groupId: req.body.groupId});
+        if (!groupFind) {
+            res.send({
+                ok: false,
+                error: 'Group not found',
+                data: null
+            });
+        } else {
+            let group_members = JSON.parse(groupFind.members);
+            if (!group_members.includes(resUser.id)){
+                res.send({
+                    ok: false,
+                    error: 'Not in group',
+                    data: null
+                });
+            }else{
+                let user_groups = JSON.parse(resUser.groups);
+                let gm = group_members.filter(function (value, index, arr) {
+                    return value !== resUser.id
+                });
+                let ug = user_groups.filter(function (value, index, arr) {
+                    return value !== groupFind.groupId
+                });
+                let res1 = await groupModel.updateOne({groupId: groupFind.groupId}, {members: JSON.stringify(gm)});
+                let res2 = await userModel.updateOne({id: resUser.id}, {groups: JSON.stringify(ug)});
+                res.send({
+                    ok: true,
+                    error: null,
+                    data: {res1: res1, res2: res2}
+                });
+            }
+        }
+    }
+});
 
 /*
  * Removes members from a group if the user requesting to do so is the leader
