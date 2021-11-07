@@ -17,6 +17,7 @@ const mongoose = require("mongoose");
 //Express routes
 const usersRouter = require("./routes/users");
 const groupsRouter = require('./routes/groups');
+const assignmentsRouter = require('./routes/assignments');
 
 //Connect to atlas
 mongoose.connect(process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -39,6 +40,7 @@ app.use(my_session);
 //Use the express routes
 app.use("/users", usersRouter);
 app.use('/groups', groupsRouter);
+app.use('/assignments', assignmentsRouter);
 
 //CORS can be removed now, (added it during a dual server boot setup)
 app.use(cors());

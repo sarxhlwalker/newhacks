@@ -1,5 +1,6 @@
 const userModel = require('./models/users');
 const groupModel = require('./models/groups');
+const assModel = require('./models/assignments');
 
 const mongoose = require("mongoose");
 
@@ -45,5 +46,23 @@ module.exports = {
     md5password: function (password) {
         let crypto = require('crypto');
         return crypto.createHash('md5').update(password).digest('hex');
+    },
+    validGroup: async function (groupId){
+        let group = await groupModel.findOne({groupId: groupId});
+        return !!group;
+    },
+    validateAssignment: async function (assignment){
+        let errs = []
+
+        if(!assignment.title) errs.push('Have title');
+        if(!assignment.description) errs.push('Have description');
+        if(!assignment.date) errs.push('Have due date');
+
+        // Ensure the title is unique
+        let repeats = await assModel.findOne({title: assignment.title});
+        console.log(repeats);
+        if(repeats) errs.push('Title exists');
+
+        return errs;
     }
 }
