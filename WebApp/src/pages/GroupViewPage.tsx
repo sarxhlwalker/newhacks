@@ -212,6 +212,9 @@ class GroupViewContainer extends React.Component<IProps, IState> {
         return (
             <>
                 <h2>{groupData.name}</h2>
+                Group Code:{" "}
+                <code>{this.state.groupData!.id}</code>
+                <br />
                 <a
                     href="#"
                     onClick={() => {
