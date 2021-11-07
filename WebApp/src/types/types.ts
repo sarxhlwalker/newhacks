@@ -21,6 +21,7 @@ export interface RawUserLookupData {
     firstname: string;
     lastname: string;
     username: string;
+    id: string;
 }
 
 // Used internally

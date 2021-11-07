@@ -40,7 +40,7 @@ export class GroupCard extends React.Component<IProps, IState> {
                                 apiPost("groups/kick", {
                                     sid: AppStorage.assertSessionID(),
                                     groupId: this.props.groupData.id,
-                                    username: userData.username,
+                                    userId: userData.id,
                                 }).then(() => {
                                     window.location.reload();
                                 });
