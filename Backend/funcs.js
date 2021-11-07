@@ -55,7 +55,6 @@ module.exports = {
         let errs = []
 
         if(!assignment.title) errs.push('Have title');
-        if(!assignment.description) errs.push('Have description');
         if(!assignment.date) errs.push('Have due date');
 
         // Ensure the title is unique

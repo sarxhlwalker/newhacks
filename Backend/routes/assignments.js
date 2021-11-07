@@ -86,4 +86,13 @@ router.post('/create', async  function(req,res,next){
     }
 });
 
+/*
+ * Get list of all assignments in a group
+ * Requires sid and groupId
+ * Returns list of assignment objects
+ */
+router.post('/get', async function(req, res, next){
+
+});
+
 module.exports = router
