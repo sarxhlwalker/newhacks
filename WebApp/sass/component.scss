@@ -38,7 +38,7 @@
     border: 1px solid #bbb;
     background-color: transparent;
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
     height: auto;
 
     user-select: none;
@@ -50,6 +50,8 @@
     h3 {
         margin-bottom: 6px;
         color: #009688;
+        overflow-x: auto;
+        font-size: 24pt;
     }
 
     hr {
@@ -103,7 +105,7 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.308);
     backdrop-filter: blur(4px);
-    
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -141,11 +143,11 @@
     justify-content: space-between;
 
     .about {
-        .name {}
+        .name {
+        }
     }
 
     .controls {
-
     }
 
     margin-bottom: 5px;

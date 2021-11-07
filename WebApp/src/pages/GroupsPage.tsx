@@ -63,6 +63,7 @@ class GroupsContainer extends React.Component<IProps, IState> {
                         amIOwner={amIOwner}
                         key={group.id}
                         selfDataCache={this.selfDataCache!}
+                        pageView={this.props.pageView}
                     ></GroupCard>
                 );
             });
