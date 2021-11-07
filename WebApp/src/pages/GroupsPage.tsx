@@ -5,7 +5,7 @@ import { Header } from "../components/PageHeader";
 import { Page } from "../Page";
 import { PageView } from "../PageView";
 import { convertRawGroupData, Group, RawGroupData, RawUserSelfData } from "../types/types";
-import { GroupCard } from "./GroupCard";
+import { GroupCard } from "../components/GroupCard";
 
 interface IProps {
     pageView: PageView;
@@ -39,7 +39,7 @@ class GroupsContainer extends React.Component<IProps, IState> {
                 if (response.ok) {
                     let rawGroupData = response.data!.groups;
                     let groupData = rawGroupData.map((g) => convertRawGroupData(g));
-
+                    console.log(groupData);
                     this.setState({
                         groups: groupData,
                     });
@@ -57,7 +57,14 @@ class GroupsContainer extends React.Component<IProps, IState> {
             return this.state.groups.map((group) => {
                 let myID = this.selfDataCache!.id;
                 let amIOwner = myID === group.leaderID;
-                return <GroupCard groupData={group} isOwner={amIOwner} key={group.id}></GroupCard>;
+                return (
+                    <GroupCard
+                        groupData={group}
+                        amIOwner={amIOwner}
+                        key={group.id}
+                        selfDataCache={this.selfDataCache!}
+                    ></GroupCard>
+                );
             });
         }
 

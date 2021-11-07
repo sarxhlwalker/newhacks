@@ -5,16 +5,22 @@ export interface RawUserSelfData {
     lastname: string;
     email: string;
     username: string;
-    id: number;
+    id: string;
 }
 
 export interface RawGroupData {
     groupId: string;
     name: string;
-    leaderId: number;
+    leaderId: string;
     leaderName: string;
     members: string;
     assignments: string;
+}
+
+export interface RawUserLookupData {
+    firstname: string;
+    lastname: string;
+    username: string;
 }
 
 // Used internally
@@ -22,9 +28,9 @@ export interface RawGroupData {
 export interface Group {
     id: string;
     name: string;
-    leaderID: number;
+    leaderID: string;
     leaderName: string;
-    memberIDs: number[];
+    memberIDs: string[];
     assignments: any;
 }
 
