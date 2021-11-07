@@ -78,9 +78,17 @@ export class GroupCard extends React.Component<IProps, IState> {
 
     render() {
         let group = this.props.groupData;
+        let groupCard = React.createRef<HTMLDivElement>();
 
         return (
-            <div className="group-card">
+            <div
+                className="group-card"
+                onClick={(ev) => {
+                    if (ev.target !== groupCard.current) return;
+                    this.props;
+                }}
+                ref={groupCard}
+            >
                 <h3>{group.name}</h3>
                 Group Code: <code>{group.id}</code>
                 <hr />
