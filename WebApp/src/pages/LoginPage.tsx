@@ -26,7 +26,7 @@ class LoginContainer extends React.Component<IProps, IState> {
 
     renderAlerts() {
         if (this.state.loginStatusMessage !== null) {
-            return <AlertBox>{this.state.loginStatusMessage}</AlertBox>;
+            return <AlertBox>Error: {this.state.loginStatusMessage}</AlertBox>;
         }
     }
 

@@ -12,9 +12,11 @@ const mongoose = require("mongoose");
  * Otherwise sends back just the number 404
  */
 router.post('/login', async function (req, res, next) {
+    console.log(req.body);
     let user = await userModel.findOne({ username: req.body.username, password: req.body.password });
     if (user) {
         let query = {username: req.body.username, password: req.body.password};
+        
         let result = await userModel.updateOne(query, {apid: req.sessionID});
         res.send({
             ok: true,
