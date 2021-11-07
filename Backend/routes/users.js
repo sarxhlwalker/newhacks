@@ -15,10 +15,10 @@ router.post("/login", async function (req, res, next) {
     console.log(req.body);
     let user = await userModel.findOne({
         username: req.body.username,
-        password: req.body.password,
+        password: funcs.md5password(req.body.password),
     });
     if (user) {
-        let query = { username: req.body.username, password: req.body.password };
+        let query = { username: req.body.username, password: funcs.md5password(req.body.password) };
 
         let result = await userModel.updateOne(query, { apid: req.sessionID });
         res.send({
@@ -70,6 +70,7 @@ router.post("/save", async function (req, res, next) {
             data: null,
         });
     } else {
+        user.password = funcs.md5password(user.password);
         let result = await userModel.create(user);
         res.send({
             ok: true,
