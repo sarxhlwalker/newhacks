@@ -37,9 +37,9 @@ router.post("/login", async function (req, res, next) {
 /*
  * Get the user firstname, lastname and username from userid
  */
-router.post('/lookup', async function(req, res, next){
-   let id = '' +req.body.id;
-   let resUser = await userModel.findOne({ id: id.toString() });
+router.post("/lookup", async function (req, res, next) {
+    let id = "" + req.body.id;
+    let resUser = await userModel.findOne({ id: id.toString() });
     if (resUser) {
         res.send({
             ok: true,
@@ -48,7 +48,7 @@ router.post('/lookup', async function(req, res, next){
                 firstname: resUser.firstname,
                 lastname: resUser.lastname,
                 username: resUser.username,
-                id: resUser.id
+                id: resUser.id,
             },
         });
     } else {
@@ -74,10 +74,10 @@ router.post("/save", async function (req, res, next) {
     }
 
     let ps_id = funcs.generateTextId(8);
-    let id_repeats = await userModel.findOne({id: ps_id});
-    while(id_repeats){
+    let id_repeats = await userModel.findOne({ id: ps_id });
+    while (id_repeats) {
         ps_id = funcs.generateTextId(8);
-        id_repeats = await userModel.findOne({id: ps_id});
+        id_repeats = await userModel.findOne({ id: ps_id });
     }
 
     let user = {
