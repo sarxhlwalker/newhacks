@@ -47,16 +47,16 @@ router.post('/create', async  function(req,res,next){
                 // User is in the group
                 // Validate post data
                 let asId = funcs.generateTextId(6);
-                let repeats = await assModel.findOne({assignmentsId: asId});
+                let repeats = await assModel.findOne({assignmentId: asId});
 
                 while(repeats){
                     asId = funcs.generateTextId(6);
-                    repeats = await assModel.findOne({assignmentsId: asId});
+                    repeats = await assModel.findOne({assignmentId: asId});
                 }
 
                 let assignment = {
                     _id: new mongoose.Types.ObjectId(),
-                    assignmentsId: asId,
+                    assignmentId: asId,
                     title: req.body.title,
                     description: req.body.description,
                     date: req.body.date,

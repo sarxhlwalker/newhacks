@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var assModel = mongoose.model('assignments',{
     _id: {type: String, required: true},
-    assignmentsId: {type: String, required: false},
+    assignmentId: {type: String, required: false},
     title: {type: String, required: true},
     description: {type: String, required: false},
     date: {type: Number, required: true},
