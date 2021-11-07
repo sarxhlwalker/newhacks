@@ -23,7 +23,6 @@ router.post('/get', async function (req, res, next) {
     } else {
         let groups = JSON.parse(resUser.groups);
         let obj_groups = []
-        console.log(groups);
         for (group of groups){
             let x_group = await groupModel.findOne({groupId: group});
             obj_groups.push(x_group);
@@ -166,6 +165,7 @@ router.post('/leave', async function(req, res, next){
                 let ug = user_groups.filter(function (value, index, arr) {
                     return value !== groupFind.groupId
                 });
+
                 let res1 = await groupModel.updateOne({groupId: groupFind.groupId}, {members: JSON.stringify(gm)});
                 let res2 = await userModel.updateOne({id: resUser.id}, {groups: JSON.stringify(ug)});
                 res.send({
@@ -230,11 +230,11 @@ router.post('/kick', async function(req, res, next){
                 }else{
                     // User found in the group to delete
                     group_members = group_members.filter(function(value, index, arr){
-                        return value !== userToKick.id
+                        return value === userToKick.id
                     });
                     curr_groups = JSON.parse(resUser.groups);
                     curr_groups = curr_groups.filter(function (value, index, arr){
-                        return value !== groupFind.groupId
+                        return value === userToKick.id
                     });
 
                     let res1 = await groupModel.updateOne({groupId: groupFind.groupId}, {members: JSON.stringify(group_members)});

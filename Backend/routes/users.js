@@ -39,8 +39,9 @@ router.post("/login", async function (req, res, next) {
  * Get the user firstname, lastname and username from userid
  */
 router.post('/lookup', async function(req, res, next){
-   let id = req.body.id;
-   let resUser = await userModel.findOne({ id: id });
+   let id = '' +req.body.id;
+   let resUser = await userModel.findOne({ id: id.toString() });
+   console.log(resUser);
     if (resUser) {
         res.send({
             ok: true,
