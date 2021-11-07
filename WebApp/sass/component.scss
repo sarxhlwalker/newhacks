@@ -123,3 +123,27 @@
     }
 }
 
+.user-card {
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding: 10px 20px;
+    display: inline-block;
+    background-color: white;
+    border: 1px solid rgb(150, 150, 150);
+    color: #555;
+    text-align: center;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .about {
+        .name {}
+    }
+
+    .controls {
+
+    }
+
+    margin-bottom: 5px;
+}
