@@ -80,7 +80,17 @@ export class GroupCard extends React.Component<IProps, IState> {
     }
 
     computeTitleFontSize(title: string) {
-        return;
+        if (title.length > 32) {
+            return "16pt";
+        }
+        return "24pt";
+    }
+
+    goToGroupView() {
+        // HACK: Pass group data to the page instance via static
+        // variable.
+        GroupViewPage.groupId = this.props.groupData.id;
+        this.props.pageView.transitionToPage(GroupViewPage);
     }
 
     render() {
@@ -92,11 +102,18 @@ export class GroupCard extends React.Component<IProps, IState> {
                 className="group-card"
                 onClick={(ev) => {
                     if (ev.target !== groupCard.current) return;
-                    this.props.pageView.transitionToPage(GroupViewPage);
+                    this.goToGroupView();
                 }}
                 ref={groupCard}
             >
-                <h3 style={{ fontSize: this.computeTitleFontSize(group.name) }}>{group.name}</h3>
+                <h3
+                    style={{ fontSize: this.computeTitleFontSize(group.name) }}
+                    onClick={(ev) => {
+                        this.goToGroupView();
+                    }}
+                >
+                    {group.name}
+                </h3>
                 Group Code: <code>{group.id}</code>
                 <hr />
                 <div>
