@@ -52,9 +52,9 @@ export class PageView extends React.Component<IProps, IState> {
     }
 
     componentDidMount() {
-        this.animationInterval = setInterval(() => {
+        this.animationInterval = (setInterval(() => {
             this.animationLoop();
-        }, this.animationSpeed);
+        }, this.animationSpeed) as any);
     }
 
     componentWillUnmount() {
