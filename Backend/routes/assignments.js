@@ -5,6 +5,8 @@ const userModel = require("../models/users");
 const groupModel = require("../models/groups");
 const assModel = require("../models/assignments");
 
+const twilio = require('twilio');
+
 const funcs = require("../funcs.js");
 
 const mongoose = require("mongoose");
@@ -230,6 +232,28 @@ router.post('/mark/done', async function (req, res, next) {
 
                     let res1 = await assModel.updateOne({assignmentId: assnRep.assignmentId}, {completed: assnRep.completed});
                     let res2 = await groupModel.updateOne({groupId: assnRep.groupId}, {assignments: group.assignments});
+                    const accountSid = process.env.ACCOUNT_SID; // Your Account SID from www.twilio.com/console
+                    const authToken = process.env.AUTH_TOKEN; // Your Auth Token from www.twilio.com/console
+
+                    const client = new twilio(accountSid, authToken);
+
+                    let groupMembers = await groupModel.findOne({groupId: group.groupId});
+                    let phones = []
+                    for (member of JSON.parse(groupMembers.members)){
+                        phones.push(member.phone);
+                    }
+
+                    let content = resUser.username +" has just completed " +assnRep.title +". You can do it too!"
+                    for (phone of phones){
+                        client.messages
+                            .create({
+                                body: content,
+                                to: '+1' +phone, // Text this number
+                                from: '+19033070815', // From a valid Twilio number
+                            })
+                            .then((message) => console.log(message.sid));
+                    }
+
                     res.send({
                         ok: true,
                         error: null,
