@@ -17,6 +17,7 @@ interface IState {
 class RegistrationContainer extends React.Component<IProps, IState> {
     firstnameRef = React.createRef<HTMLInputElement>();
     lastnameRef = React.createRef<HTMLInputElement>();
+    phoneNoRef = React.createRef<HTMLInputElement>();
     emailRef = React.createRef<HTMLInputElement>();
     usernameRef = React.createRef<HTMLInputElement>();
     passwordRef = React.createRef<HTMLInputElement>();
@@ -42,6 +43,7 @@ class RegistrationContainer extends React.Component<IProps, IState> {
                 <h1>Register hoe</h1>
                 <input placeholder="First Name" type="text" ref={this.firstnameRef}></input>
                 <input placeholder="Last Name" type="text" ref={this.lastnameRef}></input>
+                <input placeholder="Phone Number" type="tel" ref={this.phoneNoRef}></input>
                 <input placeholder="Email" type="email" ref={this.emailRef}></input>
                 <input placeholder="Username" type="text" ref={this.usernameRef}></input>
                 <input placeholder="Password" type="password" ref={this.passwordConfirmRef}></input>
@@ -68,6 +70,7 @@ class RegistrationContainer extends React.Component<IProps, IState> {
                         apiPost("users/save", {
                             firstname: this.firstnameRef.current!.value,
                             lastname: this.lastnameRef.current!.value,
+                            phonenumber: this.phoneNoRef.current!.value,
                             email: this.emailRef.current!.value,
                             username: this.usernameRef.current!.value,
                             password: this.passwordRef.current!.value,
