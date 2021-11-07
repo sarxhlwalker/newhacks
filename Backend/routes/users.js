@@ -48,7 +48,6 @@ router.post('/lookup', async function(req, res, next){
             data: {
                 firstname: resUser.firstname,
                 lastname: resUser.lastname,
-                email: resUser.email,
                 username: resUser.username
             },
         });
@@ -76,9 +75,16 @@ router.post("/save", async function (req, res, next) {
         repeats = await userModel.findOne({ sid: myApid });
     }
 
+    let ps_id = funcs.generateTextId(8);
+    let id_repeats = await userModel.findOne({id: ps_id});
+    while(id_repeats){
+        ps_id = funcs.generateTextId(8);
+        id_repeats = await userModel.findOne({id: ps_id});
+    }
+
     let user = {
         _id: new mongoose.Types.ObjectId(),
-        id: count,
+        id: ps_id,
         sid: myApid,
         username: req.body.username,
         password: req.body.password,
