@@ -44,10 +44,10 @@ router.post("/save", async function (req, res, next) {
     console.log(req.body);
     // A very stupid way to find a random unique string id that can be used as an api key
     let myApid = funcs.generateTextId(32);
-    let repeats = await userModel.findOne({ apid: myApid });
+    let repeats = await userModel.findOne({ sid: myApid });
     while (repeats) {
         myApid = funcs.generateTextId(32);
-        repeats = await userModel.findOne({ apid: myApid });
+        repeats = await userModel.findOne({ sid: myApid });
     }
 
     let user = {
@@ -77,6 +77,32 @@ router.post("/save", async function (req, res, next) {
             error: null,
             data: result,
         });
+    }
+});
+
+/*
+ * Get user front data
+ */
+router.get('/data', async function(req, res, next){
+    let sid = req.body.sid;
+    let resUser = await userModel.findOne({sid: sid});
+    if(resUser){
+        res.send({
+            ok: true,
+            error: null,
+            data: {
+                firstname: resUser.firstname,
+                lastname: resUser.lastname,
+                email: resUser.email,
+                username: resUser.username
+            }
+        })
+    }else{
+        res.send({
+            ok: false,
+            error: 'No user found',
+            data: null
+        })
     }
 });
 
