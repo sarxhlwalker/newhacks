@@ -1,5 +1,6 @@
 const userModel = require('./models/users');
 const mongoose = require("mongoose");
+const {validateEmail} = require("./funcs");
 
 module.exports = {
     generateTextId: function (length) {
@@ -18,6 +19,9 @@ module.exports = {
         if (!user.username) errs.push('Add a username');
         if (!user.firstname || !user.lastname) errs.push('Have a name')
 
+        if (!user.email) errs.push('Have email')
+        if (!validateEmail(user.email)) errs.push('Invalid email')
+
         let repeat = await userModel.findOne({email: user.email});
         if (repeat) {
             errs.push('Email already exists')
@@ -28,5 +32,9 @@ module.exports = {
         }
         if (user.password.length === 0) errs.push('Password empty');
         return errs;
+    },
+    validateEmail: function (email) {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
     }
 }
