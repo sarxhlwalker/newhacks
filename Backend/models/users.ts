@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
-var userModel = mongoose.model('users', {
+
+export const userModel = mongoose.model('users', {
     _id: {type: String, required: true},
     id: {type: String, required: false},
     sid: {type: String, required: true},
@@ -11,4 +12,3 @@ var userModel = mongoose.model('users', {
     phone: {type: String, required: true},
     groups: {type: String, required: true}
 });
-module.exports = userModel;

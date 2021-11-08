@@ -1,18 +1,21 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 
-const express = require("express");
-const debug = require("debug")("localhost:server");
-const path = require("path");
-const bodyParser = require("body-parser");
+dotenv.config();
 
-const cors = require("cors");
-const http = require("http");
+import express from "express";
+import _debug from "debug";
+import path from "path";
+import cors from "cors";
+import http from "http";
+import bodyParser from "body-parser";
+
+const debug = _debug("localhost:server");
 
 //Mongoose Models
 const userModel = require("./models/users");
 
 //Initialize mongoose models
-const mongoose = require("mongoose");
+import mongoose, { Error } from "mongoose";
 
 //Express routes
 const usersRouter = require("./routes/users");
@@ -20,7 +23,7 @@ const groupsRouter = require('./routes/groups');
 const assignmentsRouter = require('./routes/assignments');
 
 //Connect to atlas
-mongoose.connect(process.env.CONNECTION_URL, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(process.env.CONNECTION_URL!, {useNewUrlParser: true, useUnifiedTopology: true} as any);
 
 const app = express();
 
@@ -60,7 +63,7 @@ server.on("listening", onListening);
  * Normalize a port into a number, string, or false.
  */
 
-function normalizePort(val) {
+function normalizePort(val: any) {
     const port = parseInt(val, 10);
 
     if (isNaN(port)) {
@@ -80,7 +83,7 @@ function normalizePort(val) {
  * Event listener for HTTP server "error" event.
  */
 
-function onError(error) {
+function onError(error: any) {
     if (error.syscall !== "listen") {
         throw error;
     }
@@ -107,7 +110,7 @@ function onError(error) {
  */
 
 function onListening() {
-    const addr = server.address();
+    const addr = server.address()!;
     const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
     console.log("Listening on " + bind);
 }
