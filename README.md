@@ -8,7 +8,7 @@ Developed in 24 hours, Peer Pressure Panda is a social media app that won [IEEE 
 
 > Instead of weakly asking friends about their success in school and their productivity, this is an easy shortcut to your answers! Moreover, we have found that knowing about others’ success makes it more encouraging for us to work hard for the same result, so Peer Pressure Panda is the perfect solution: you get automated text messages whenever a peer completes their work, so you get reminded to do the same as well!
 
-More information for our app can be found on our [Devpost page](https://devpost.com/software/peer-pressure-panda)
+More information for our app can be found on our [Devpost page](https://devpost.com/software/peer-pressure-panda).
 
 ## Web Demo
 
