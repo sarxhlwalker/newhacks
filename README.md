@@ -16,6 +16,9 @@ As of writing, the web demo for this project is hosted at https://pandapressure.
 
 ## Build from Source
 
+> ### Warning
+> You will need to create a `.env` for the server to run properly. This file contains environment variables for a MongoDB connection url (`CONNECTION_URL`) and a Twilio session key (`SESSION_KEY`).
+
 The source code for this project can be compiled and run from the ground-up using the command found in the `Procfile`, located in the root directory of this repository. Alternatively, you can manually compile this project using the steps below.
 
 1. Install Typescript and SASS (if you have not already done so) using
@@ -48,6 +51,3 @@ to compile the necessary components for the project.
 3. Navigate backwards into the root directory, then into `Backend/` and run `npm i` to install any necessary dependencies for the server.
 
 4. Still in `Backend/`, run `node server.js`
-
-> ## Warning
-> You will need to create a `.env` for the server to run properly with the environment variables for a MongoDB connection url (`CONNECTION_URL`) and a Twilio session key (`SESSION_KEY`).
