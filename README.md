@@ -12,7 +12,7 @@ More information for our app can be found on our [Devpost page](https://devpost.
 
 ## Web Demo
 
-As of writing, the web demo for this project is hosted at https://pandapressure.tech/.
+As of writing, the web demo for this project is hosted at https://pandapressure.tech/. Because this app is hosted by Heroku at the moment, it may initially take a little while to load.
 
 ## Build from Source
 
