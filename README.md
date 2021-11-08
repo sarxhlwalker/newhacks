@@ -1,5 +1,53 @@
 # Peer Pressure Panda
 
-Peer Pressure Panda is a social media app developed in 24 hours for IEEE UofT's NewHacks hackathon that incentivizes productivity by letting students create groups for their classes at school in which they will be notified when one of their friends completes an assignment for that class.
+Peer Pressure Panda is a social media app developed in 24 hours for [IEEE UofT's 2021 NewHacks](https://newhacks-2021.devpost.com/) that incentivizes productivity by letting students create groups for their classes at school in which they will be notified by text message when one of their friends completes an assignment for that class.
 
 ![Screenshot](https://cdn.discordapp.com/attachments/906910291776925696/906910298391334952/unknown.png)
+
+## Description
+
+> Instead of weakly asking friends about their success in school and their productivity, this is an easy shortcut to your answers! Moreover, we have found that knowing about others’ success makes it more encouraging for us to work hard for the same result, so Peer Pressure Panda is the perfect solution: you get automated text messages whenever a peer completes their work, so you get reminded to do the same as well!
+
+More information for our app can be found on our [Devpost page](https://devpost.com/software/peer-pressure-panda)
+
+## Web Demo
+
+As of writing, the web demo for this project is hosted at https://pandapressure.tech/.
+
+## Build from Source
+
+The source code for this project can be compiled and run from the ground-up using the command found in the `Procfile`, located in the root directory of this repository. Alternatively, you can manually compile this project using the steps below.
+
+1. Install Typescript and SASS (if you have not already done so) using
+
+```
+npm i -g typescript
+```
+
+and
+
+```
+npm i -g sass
+```
+
+2. Compile the front-end
+   Navigate to `WebApp/` and run `npm i` to install any necessary dependencies, then run
+
+```
+tsc
+```
+
+and
+
+```
+sass sass:static/styles
+```
+
+to compile the necessary components for the project.
+
+3. Navigate backwards into the root directory, then into `Backend/` and run `npm i` to install any necessary dependencies for the server.
+
+4. Still in `Backend/`, run `node server.js`
+
+> ## Warning
+> You will need to create a `.env` for the server to run properly with the environment variables for a MongoDB connection url (`CONNECTION_URL`) and a Twilio session key (`SESSION_KEY`).
