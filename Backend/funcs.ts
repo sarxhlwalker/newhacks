@@ -1,3 +1,5 @@
+import { User } from "./models/users";
+
 const userModel = require("./models/users");
 const groupModel = require("./models/groups");
 const assModel = require("./models/assignments");
@@ -5,7 +7,7 @@ const assModel = require("./models/assignments");
 const mongoose = require("mongoose");
 
 module.exports = {
-    generateTextId: function (length) {
+    generateTextId: function (length: number) {
         var result = "";
         var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var charactersLength = characters.length;
@@ -14,7 +16,7 @@ module.exports = {
         }
         return result;
     },
-    formValidation: async function (user) {
+    formValidation: async function (user: User) {
         let errs = [];
 
         if (!user.username) errs.push("Username cannot be empty");
