@@ -129,14 +129,13 @@ class GroupsContainer extends React.Component<IProps, IState> {
                                     "Error: " + (response.error || "Unknown error");
                             }
                         });
-                        modal.close();
                     }}
                 >
                     Create
                 </button>
                 <br />
                 <div style={{ textAlign: "left" }}>
-                    <span ref={errorMsg} style={{ color: "#E53935" }}></span>
+                    <span style={{ color: "#E53935" }} ref={errorMsg}></span>
                 </div>
             </div>
         );
