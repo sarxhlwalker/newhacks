@@ -15,7 +15,7 @@ export const assModel = model<Assignment>(
         _id: String,
         title: String,
         description: String,
-        date: { type: Number, required: true },
+        date: Number,
         completedBy: [String],
         groupId: String,
     })
