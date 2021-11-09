@@ -59,7 +59,7 @@ export const globalFuncs = {
         return id;
     },
 
-    // Find a user based off sid or id
+    // Find a user based off id or sid
     findUserOnId: async function (uid: string, use: boolean) {
         // Return based on id if use is true, sid if use is false
         return (use) ? await userModel.findOne({id: uid}) : await userModel.findOne({sid: uid});
