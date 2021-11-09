@@ -37,13 +37,11 @@ router.post(
     apiFunctionWrap(async (ctx: APIFunctionContext) => {
         // Create a new user
         let user: User = await userFuncs.createNewUser(ctx.req.body);
-
-        user.password = globalFuncs.md5password(user.password);
-
-        // Return the data after validating the user
         let error = await userFuncs.validateNewUser(user);
 
         if (error !== null) ctx.replyWithError(error);
+
+        user.password = globalFuncs.md5password(user.password);
 
         await userModel.create(user);
         return user;
