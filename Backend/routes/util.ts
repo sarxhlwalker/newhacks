@@ -21,7 +21,7 @@ interface APIFunctionContext {
     req: express.Request;
     res: express.Response;
     next: express.NextFunction;
-    returnError: (msg: string) => never;
+    replyWithError: (msg: string) => never;
 }
 
 function _errorFunction(msg: string): never {
@@ -38,7 +38,7 @@ export function apiFunctionWrap(func: APIEndpointFunction) {
                 req: req,
                 res: res,
                 next: next,
-                returnError: _errorFunction,
+                replyWithError: _errorFunction,
             });
         } catch (err) {
             if (err instanceof _APIFunctionError) {

@@ -21,20 +21,20 @@ router.post("/create", apiFunctionWrap(async (ctx) => {
 
     let resUser = await userModel.findOne({ sid: sid });
     if (!resUser) {
-        ctx.throwError(ERROR_MSGS.invalidSession);
+        ctx.replyWithError(ERROR_MSGS.invalidSession);
     }
 
     // User is valid
     // Ensure group is valid
     if (!funcs.validateGroup(ctx.req.body.groupId)) {
-        ctx.throwError("No such group exists");
+        ctx.replyWithError("No such group exists");
     }
 
     // Group is now valid
     let groupFind = (await groupModel.findOne({ groupId: body.groupId }))!;
     let members = JSON.parse(groupFind.members);
     if (!members.includes(resUser!.id)) {
-        ctx.throwError("You are not in this group!");
+        ctx.replyWithError("You are not in this group!");
     }
 
     // User is in the group
@@ -61,7 +61,7 @@ router.post("/create", apiFunctionWrap(async (ctx) => {
     let errs = await funcs.validateAssignment(assignment);
 
     if (errs.length) {
-        ctx.throwError(errs[0]);
+        ctx.replyWithError(errs[0]);
     }
 
     let result = await assModel.create(assignment);
