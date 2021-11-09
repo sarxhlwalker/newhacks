@@ -4,7 +4,12 @@ import { User, userModel } from "../models/users";
 import mongoose from "mongoose";
 import express from "express";
 import { groupsFuncs } from "./util/groups";
-import { APIFunctionContext, apiFunctionWrap, resolveSessionID, safeGetGroup } from "./util/api_util";
+import {
+    APIFunctionContext,
+    apiFunctionWrap,
+    resolveSessionID,
+    safeGetGroup,
+} from "./util/api_util";
 import { globalFuncs } from "./util/globals";
 
 const router = express.Router();
@@ -49,9 +54,8 @@ router.post(
             groupCode: await groupsFuncs.generateUniqueGroupCode(),
             name: body.name,
             leaderId: user._id,
-            leaderName: user.username,
-            members: JSON.stringify([user._id]),
-            assignments: JSON.stringify([]),
+            members: [user._id],
+            assignments: [],
         };
 
         // Validate the group [ [] if groups is not null and groups.name is not null | errs[] ]
@@ -78,21 +82,20 @@ router.post(
     "/join",
     apiFunctionWrap(async (ctx: APIFunctionContext) => {
         let body = ctx.req.body;
-        let resUser = await resolveSessionID(ctx, body.sid);
+        let user = await resolveSessionID(ctx, body.sid);
+        let groupToJoin = await safeGetGroup(ctx, body.groupId);
 
-        let groupFind = await safeGetGroup(ctx, body.groupId);
-
-        let members = JSON.parse(groupFind.members);
-        let currentGroups = resUser.groups;
-        if (members.includes(resUser._id) || currentGroups.includes(groupFind._id)) {
+        let members = groupToJoin.members;
+        let currentGroups = user.groups;
+        if (members.includes(user._id) || currentGroups.includes(groupToJoin._id)) {
             ctx.replyWithError("You are already in this group");
         }
 
-        let res1 = await groupModel.findByIdAndUpdate(groupFind._id, {
-            members: JSON.stringify(members.concat(resUser._id)),
+        let res1 = await groupModel.findByIdAndUpdate(groupToJoin._id, {
+            members: members.concat(user._id),
         });
-        let res2 = await userModel.findByIdAndUpdate(resUser._id, {
-            groups: currentGroups.concat(groupFind._id),
+        let res2 = await userModel.findByIdAndUpdate(user._id, {
+            groups: currentGroups.concat(groupToJoin._id),
         });
 
         return { updateGroup: res1, updateUser: res2 };
@@ -110,7 +113,7 @@ router.post(
         let resUser = await resolveSessionID(ctx, body.sid);
 
         let groupFind = await safeGetGroup(ctx, body.groupId);
-        let groupMembers: string[] = JSON.parse(groupFind.members);
+        let groupMembers: string[] = groupFind.members;
 
         if (!groupMembers.includes(resUser._id)) {
             ctx.replyWithError("You are not in this group");
@@ -124,7 +127,7 @@ router.post(
         let res1;
         if (gm.length > 0) {
             res1 = await groupModel.findByIdAndUpdate(groupFind._id, {
-                members: JSON.stringify(gm),
+                members: gm,
             });
         } else {
             res1 = await groupModel.deleteOne({ id: groupFind._id });
@@ -166,7 +169,7 @@ router.post("/kick", async function (req, res) {
                 });
             } else {
                 // Check to see whether username exists in group
-                let groupMembers: string[] = JSON.parse(groupFind.members);
+                let groupMembers: string[] = groupFind.members;
                 let userToKick = await userModel.findOne({ id: req.body.userId });
 
                 if (!userToKick) {
@@ -197,7 +200,7 @@ router.post("/kick", async function (req, res) {
 
                     let res1 = await groupModel.updateOne(
                         { id: groupFind.id },
-                        { members: JSON.stringify(groupMembers) }
+                        { members: groupMembers }
                     );
                     let res2 = await userModel.updateOne(
                         { id: userToKick.id },

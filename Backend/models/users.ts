@@ -15,14 +15,14 @@ export interface User {
 export const userModel = model(
     "users",
     new Schema<User>({
-        _id: { type: String, required: true },
-        sid: { type: String, required: true },
-        username: { type: String, required: true },
-        firstname: { type: String, required: true },
-        lastname: { type: String, required: true },
-        password: { type: String, required: true },
-        email: { type: String, required: true },
-        phone: { type: String, required: true },
-        groups: [{ type: String, required: true }],
+        _id: String,
+        sid: String,
+        username: String,
+        firstname: String,
+        lastname: String,
+        password: String,
+        email: String,
+        phone: String,
+        groups: [String],
     })
 );

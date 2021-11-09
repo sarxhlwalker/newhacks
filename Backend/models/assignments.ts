@@ -5,18 +5,18 @@ export interface Assignment {
     title: string;
     description: string;
     date: number;
-    completed: string;
+    completedBy: string[];
     groupId: string;
 }
 
 export const assModel = model<Assignment>(
     "assignments",
     new Schema<Assignment>({
-        _id: { type: String, required: true },
-        title: { type: String, required: true },
-        description: { type: String, required: false },
+        _id: String,
+        title: String,
+        description: String,
         date: { type: Number, required: true },
-        completed: { type: String, required: true },
-        groupId: { type: String, required: true },
+        completedBy: [String],
+        groupId: String,
     })
 );
