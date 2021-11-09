@@ -23,7 +23,7 @@ export const globalFuncs = {
         return crypto.createHash("md5").update(password).digest("hex");
     },
 
-    generateResSend: function (ok: boolean, error: null | string[] | string, data: any) {
+    generateResSend: function (ok: boolean, error: null | string, data: any) {
         return {
             ok: ok,
             error: error,

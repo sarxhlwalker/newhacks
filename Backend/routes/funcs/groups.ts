@@ -66,7 +66,7 @@ export const groupsFuncs = {
 
     // Validate a new group, ensuring they have a non-empty name
     validateNewGroup: async function (group: Group | null) {
-        let errs: string[] | any[] = [];
+        let errs: string[] = [];
         // At this stage, if group is null, then errs will stop the flow
         return (group && group.name) ? [] : errs.concat('Name cannot be empty');
     },
