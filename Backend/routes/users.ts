@@ -1,11 +1,11 @@
 // Helper functions
-import { globalFuncs } from "./funcs/globals";
-import { userFuncs } from "./funcs/users";
+import { globalFuncs } from "./util/globals";
+import { userFuncs } from "./util/users";
 
 // Models
 import { User, userModel } from "../models/users";
 import express from "express";
-import { apiFunctionWrap, APIFunctionContext, resolveSessionID } from "./util";
+import { apiFunctionWrap, APIFunctionContext, resolveSessionID } from "./util/api_util";
 
 const router = express.Router();
 
@@ -41,11 +41,9 @@ router.post(
         user.password = globalFuncs.md5password(user.password);
 
         // Return the data after validating the user
-        let errors = await userFuncs.validateNewUser(user);
+        let error = await userFuncs.validateNewUser(user);
 
-        if (errors.length) {
-            ctx.replyWithError(errors[0]);
-        }
+        if (error !== null) ctx.replyWithError(error);
 
         await userModel.create(user);
         return user;

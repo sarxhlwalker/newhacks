@@ -1,8 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
-import { Assignment, assModel } from "../models/assignments";
-import { Group, groupModel } from "../models/groups";
-import { User, userModel } from "../models/users";
+import { Assignment, assModel } from "../../models/assignments";
+import { Group, groupModel } from "../../models/groups";
+import { User, userModel } from "../../models/users";
 
 export const ERROR_MSGS = {
     invalidSession: "Invalid session; try logging out and back in.",

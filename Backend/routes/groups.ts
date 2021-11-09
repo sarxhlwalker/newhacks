@@ -3,9 +3,9 @@ import { User, userModel } from "../models/users";
 
 import mongoose from "mongoose";
 import express from "express";
-import { groupsFuncs } from "./funcs/groups";
-import { APIFunctionContext, apiFunctionWrap, resolveSessionID, safeGetGroup } from "./util";
-import { globalFuncs } from "./funcs/globals";
+import { groupsFuncs } from "./util/groups";
+import { APIFunctionContext, apiFunctionWrap, resolveSessionID, safeGetGroup } from "./util/api_util";
+import { globalFuncs } from "./util/globals";
 
 const router = express.Router();
 

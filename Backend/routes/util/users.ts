@@ -3,6 +3,7 @@ import { funcs } from "../../funcs";
 import { globalFuncs } from "./globals";
 
 import mongoose from "mongoose";
+import { isAlphanumeric, isProfane, isStringEmpty } from "./validation";
 
 export interface UserInfoUpdate {
     newEmail: string;
@@ -80,38 +81,38 @@ export const userFuncs = {
         return null;
     },
 
-    // Validates the user created from form data
-    formValidation: async function (user: User) {
-        let errs = [];
+    validateNewUser: async function (user: User) {
+        /*
+            New user form validation; returns an error as a string if applicable,
+            null if no errors.
+        */
 
         // Ensure no field is empty
-        if (!user.username) errs.push("Username cannot be empty");
-        if (!user.firstname || !user.lastname) errs.push("Name cannot be empty"); // Either first or last name exists
-        if (!user.email) errs.push("Email cannot be empty");
-
-        if (!isEmailValid(user.email)) errs.push("Email is invalid");
+        if (isStringEmpty(user.username)) return "Username cannot be empty";
+        if (isStringEmpty(user.firstname) || isStringEmpty(user.lastname))
+            return "Name cannot be empty"; // Either first or last name exists
+        if (isStringEmpty(user.email)) return "Email cannot be empty";
+        if (user.password.length <= 3) return "Password must be at least three characters";
+        if (!isEmailValid(user.email)) return "Email is invalid";
 
         // Check to see if the email is already registered
         let repeat = await userModel.findOne({ email: user.email });
         if (repeat) {
-            errs.push("This email is already in use");
+            return "This email is already in use";
         }
+
+        // Validate username
+        if (!isAlphanumeric(user.username)) return "Username has one or more invalid characters";
+        if (isProfane(user.username)) return "Username is inappropriate";
 
         // Check to see if the username is already registered
         let userRepeat = await userModel.findOne({ username: user.username });
         if (userRepeat) {
-            errs.push("Username already exists");
+            return "Username already exists";
         }
-        if (user.password.length === 0) errs.push("Password cannot empty");
-        return errs;
-    },
-
-    // Return the result of validating the user
-    validateNewUser: async function (user: User) {
-        // Get the errors when validating the form
-        let errors = await this.formValidation(user);
-
-        return errors;
+        
+        // No errors
+        return null;
     },
 
     // Return the user data from a user id

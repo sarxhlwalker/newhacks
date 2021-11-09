@@ -13,8 +13,8 @@ import {
     resolveSessionID,
     safeGetAssignment,
     safeGetGroup,
-} from "./util";
-import { globalFuncs } from "./funcs/globals";
+} from "./util/api_util";
+import { globalFuncs } from "./util/globals";
 const router = express.Router();
 
 /*
