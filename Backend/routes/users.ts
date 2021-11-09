@@ -1,141 +1,65 @@
-import { funcs } from "../funcs";
-import { User, userModel } from "../models/users";
+// Helper functions
+import {globalFuncs} from "./funcs/globals";
+import {userFuncs} from "./funcs/users";
 
-import mongoose from "mongoose";
+// Models
+import {User, userModel} from "../models/users";
 import express from "express";
+
 const router = express.Router();
 
-// Check login post
 /*
- * Sends back the apid I expect in future api calls if successfully logs in
- * Otherwise sends back just the number 404
+ * Login route
+ * Sends back the sid, takes in username and password
+ * Sends error string if not found, or data: sid, result
  */
 router.post("/login", async function (req, res, next) {
-    let user = await userModel.findOne({
-        username: req.body.username,
-        password: funcs.md5password(req.body.password),
-    });
+    // First get the user from login data
+    let user = await userFuncs.getUserFromLogin(req.body.username, globalFuncs.md5password(req.body.password));
+    // Then try and update the user sid
+    let data = await userFuncs.updateUserSid(user, req.sessionID);
 
-    if (user) {
-        let query = { username: req.body.username, password: funcs.md5password(req.body.password) };
-
-        let result = await userModel.updateOne(query, { sid: req.sessionID });
-        res.send({
-            ok: true,
-            error: null,
-            data: { sid: req.sessionID, result: result }, // sid and result of trying to update the req
-        });
-    } else {
-        res.send({
-            ok: true,
-            error: "Incorrect username or password.",
-            data: null,
-        });
-    }
+    res.send(data);
 });
 
 /*
- * Get the user firstname, lastname and username from userid
- */
-router.post("/lookup", async function (req, res, next) {
-    let id = "" + req.body.id;
-    let resUser = await userModel.findOne({ id: id.toString() });
-    if (resUser) {
-        res.send({
-            ok: true,
-            error: null,
-            data: {
-                firstname: resUser.firstname,
-                lastname: resUser.lastname,
-                username: resUser.username,
-                id: resUser.id,
-            },
-        });
-    } else {
-        res.send({
-            ok: false,
-            error: "Invalid id",
-            data: null,
-        });
-    }
-});
-
-// Add a new user
-/*
- * Save the user data if it's valid, after doing server side validation.
+ * Save route
+ * Sends back the result of trying to create a new user
+ * Takes in the firstname, lastname, username, phone number, email and password
+ * Validates to ensure username and email are unique
  */
 router.post("/save", async function (req, res, next) {
-    // A very stupid way to find a random unique string id that can be used as an api key
-    let myApid = funcs.generateTextId(32);
-    let repeats = await userModel.findOne({ sid: myApid });
-    while (repeats) {
-        myApid = funcs.generateTextId(32);
-        repeats = await userModel.findOne({ sid: myApid });
-    }
+    // Create a new user
+    let user: User = await userFuncs.createNewUser(req.body);
 
-    let ps_id = funcs.generateTextId(8);
-    let id_repeats = await userModel.findOne({ id: ps_id });
-    while (id_repeats) {
-        ps_id = funcs.generateTextId(8);
-        id_repeats = await userModel.findOne({ id: ps_id });
-    }
+    // Return the data after validating the user
+    let data = await userFuncs.validateNewUser(user);
 
-    let user = {
-        _id: new mongoose.Types.ObjectId().toString(),
-        id: ps_id,
-        sid: myApid,
-        username: req.body.username,
-        password: req.body.password,
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        phone: req.body.phonenumber,
-        email: req.body.email,
-        groups: JSON.stringify([]),
-    };
-
-    let errors = await funcs.formValidation(user);
-    if (errors.length > 0) {
-        res.send({
-            ok: false,
-            error: errors,
-            data: null,
-        });
-    } else {
-        user.password = funcs.md5password(user.password);
-        let result = await userModel.create(user);
-        res.send({
-            ok: true,
-            error: null,
-            data: result,
-        });
-    }
+    res.send(data);
 });
 
 /*
- * Get user front data
+ * Data route
+ * Sends back user front end data
+ * Takes in the user sid generated during login or "Invalid sid" if no user is found
  */
 router.post("/data", async function (req, res, next) {
-    let sid = req.body.sid;
-    let resUser = await userModel.findOne({ sid: sid });
-    if (resUser) {
-        res.send({
-            ok: true,
-            error: null,
-            data: {
-                firstname: resUser.firstname,
-                lastname: resUser.lastname,
-                email: resUser.email,
-                username: resUser.username,
-                id: resUser.id,
-            },
-        });
-    } else {
-        res.send({
-            ok: false,
-            error: "Invalid sid",
-            data: null,
-        });
-    }
+    // Lookup the user based on sid and then generate data
+    let data = await userFuncs.userSidLookup(req.body.sid);
+
+    res.send(data);
+});
+
+/*
+ * Lookup route
+ * Sends back the front end data
+ * Takes in the user id generated during create user or "Invalid id" if no user is found
+ */
+router.post("/lookup", async function (req, res, next) {
+    // Lookup the user based on id and then generate data
+    let data = await userFuncs.userIdLookup(req.body.id.toString());
+
+    res.send(data);
 });
 
 export function users_getRouter() {

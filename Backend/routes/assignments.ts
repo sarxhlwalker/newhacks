@@ -14,6 +14,7 @@ import {
     safeGetAssignment,
     safeGetGroup,
 } from "./util";
+import {globalFuncs} from "./funcs/globals";
 const router = express.Router();
 
 /*
@@ -36,11 +37,11 @@ router.post(
 
         // User is in the group
         // Validate post data
-        let asId = funcs.generateTextId(6);
+        let asId = globalFuncs.generateTextId(6);
         let repeats = await assModel.findOne({ assignmentId: asId });
 
         while (repeats) {
-            asId = funcs.generateTextId(6);
+            asId = globalFuncs.generateTextId(6);
             repeats = await assModel.findOne({ assignmentId: asId });
         }
 

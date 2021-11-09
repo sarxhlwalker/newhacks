@@ -4,6 +4,7 @@ import { User, userModel } from "../models/users";
 
 import mongoose from "mongoose";
 import express from "express";
+import {globalFuncs} from "./funcs/globals";
 const router = express.Router();
 
 /*
@@ -47,10 +48,10 @@ router.post("/create", async function (req, res, next) {
             data: { sid: sid },
         });
     } else {
-        let myGid = funcs.generateTextId(5);
+        let myGid = globalFuncs.generateTextId(5);
         let repeats = await groupModel.findOne({ groupId: myGid });
         while (repeats) {
-            myGid = funcs.generateTextId(5);
+            myGid = globalFuncs.generateTextId(5);
             let repeats = await groupModel.find({ groupId: myGid });
         }
         let group = {
