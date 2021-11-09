@@ -64,7 +64,7 @@ router.post(
             { id: user.id },
             { groups: JSON.stringify(currGroups.concat(group.groupId)) }
         );
-        
+
         return null; // send ok:true with no data
     })
 );
