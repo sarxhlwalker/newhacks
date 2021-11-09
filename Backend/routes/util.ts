@@ -17,7 +17,7 @@ class _APIFunctionError {
     }
 }
 
-interface APIFunctionContext {
+export interface APIFunctionContext {
     req: express.Request;
     res: express.Response;
     next: express.NextFunction;
