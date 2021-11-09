@@ -92,7 +92,7 @@ export const userFuncs = {
         if (isStringEmpty(user.firstname) || isStringEmpty(user.lastname))
             return "Name cannot be empty"; // Either first or last name exists
         if (isStringEmpty(user.email)) return "Email cannot be empty";
-        if (user.password.length <= 3) return "Password must be at least three characters";
+        if (user.password.length < 3) return "Password must be at least three characters";
         if (!isEmailValid(user.email)) return "Email is invalid";
 
         // Check to see if the email is already registered
