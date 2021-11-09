@@ -7,89 +7,74 @@ import { groupModel } from "../models/groups";
 
 import mongoose from "mongoose";
 import express from "express";
+import { apiFunctionWrap, ERROR_MSGS } from "./util";
 const router = express.Router();
+
 /*
  * Create an assignment for a group
  * Takes in sid, groupId, due-date (date [as an int in unix timestamp]), title and description,
  * Returns result of trying to add assignments to group
  */
-router.post("/create", async function (req, res, next) {
-    let sid = req.body.sid;
+router.post("/create", apiFunctionWrap(async (ctx) => {
+    let body = ctx.req.body;
+    let sid = body.sid;
+
     let resUser = await userModel.findOne({ sid: sid });
     if (!resUser) {
-        res.send({
-            ok: false,
-            error: "Invalid sid",
-            data: { sid: sid },
-        });
-    } else {
-        // User is valid
-        // Ensure group is valid
-        if (!funcs.validateGroup(req.body.groupId)) {
-            res.send({
-                ok: false,
-                error: "Invalid group id",
-                data: null,
-            });
-        } else {
-            // Group is now valid
-            let groupFind = (await groupModel.findOne({ groupId: req.body.groupId }))!;
-            let members = JSON.parse(groupFind.members);
-            if (!members.includes(resUser.id)) {
-                res.send({
-                    ok: false,
-                    error: "Not in group",
-                    data: null,
-                });
-            } else {
-                // User is in the group
-                // Validate post data
-                let asId = funcs.generateTextId(6);
-                let repeats = await assModel.findOne({ assignmentId: asId });
-
-                while (repeats) {
-                    asId = funcs.generateTextId(6);
-                    repeats = await assModel.findOne({ assignmentId: asId });
-                }
-
-                let assignment = {
-                    _id: new mongoose.Types.ObjectId().toString(),
-                    assignmentId: asId,
-                    title: req.body.title,
-                    description: req.body.description,
-                    date: req.body.date,
-                    completed: JSON.stringify([]),
-                    groupId: groupFind.groupId,
-                };
-
-                // Validate the assignment object
-                let errs = await funcs.validateAssignment(assignment);
-
-                if (errs.length > 0) {
-                    res.send({
-                        ok: false,
-                        error: errs,
-                        data: null,
-                    });
-                } else {
-                    let result = await assModel.create(assignment);
-                    let curr_ass = JSON.parse(groupFind.assignments);
-                    curr_ass.push(assignment);
-
-                    let res2 = await groupModel.updateOne(
-                        { groupId: groupFind.groupId },
-                        { assignments: JSON.stringify(curr_ass) }
-                    );
-                    res.send({
-                        ok: true,
-                        error: null,
-                        data: { result, res2 },
-                    });
-                }
-            }
-        }
+        ctx.throwError(ERROR_MSGS.invalidSession);
     }
-});
+
+    // User is valid
+    // Ensure group is valid
+    if (!funcs.validateGroup(ctx.req.body.groupId)) {
+        ctx.throwError("No such group exists");
+    }
+
+    // Group is now valid
+    let groupFind = (await groupModel.findOne({ groupId: body.groupId }))!;
+    let members = JSON.parse(groupFind.members);
+    if (!members.includes(resUser!.id)) {
+        ctx.throwError("You are not in this group!");
+    }
+
+    // User is in the group
+    // Validate post data
+    let asId = funcs.generateTextId(6);
+    let repeats = await assModel.findOne({ assignmentId: asId });
+
+    while (repeats) {
+        asId = funcs.generateTextId(6);
+        repeats = await assModel.findOne({ assignmentId: asId });
+    }
+
+    let assignment = {
+        _id: new mongoose.Types.ObjectId().toString(),
+        assignmentId: asId,
+        title: body.title,
+        description: body.description,
+        date: body.date,
+        completed: JSON.stringify([]),
+        groupId: groupFind.groupId,
+    };
+
+    // Validate the assignment object
+    let errs = await funcs.validateAssignment(assignment);
+
+    if (errs.length) {
+        ctx.throwError(errs[0]);
+    }
+
+    let result = await assModel.create(assignment);
+    let curr_ass = JSON.parse(groupFind.assignments);
+    curr_ass.push(assignment);
+
+    let res2 = await groupModel.updateOne(
+        { groupId: groupFind.groupId },
+        { assignments: JSON.stringify(curr_ass) }
+    );
+    
+    return { result, res2 };
+}));
 
 /*
  * Get list of all assignments in a group
@@ -139,7 +124,7 @@ router.post("/delete", async function (req, res, next) {
     if (!resUser) {
         res.send({
             ok: false,
-            error: "Invalid sid",
+            error: "Invalid session",
             data: { sid: sid },
         });
     } else {
@@ -148,7 +133,7 @@ router.post("/delete", async function (req, res, next) {
         if (!assnRep) {
             res.send({
                 ok: false,
-                error: "Assignment not found",
+                error: "The provided assignment was not found",
                 data: null,
             });
         } else {
@@ -156,7 +141,7 @@ router.post("/delete", async function (req, res, next) {
             if (!group) {
                 res.send({
                     ok: false,
-                    error: "Group deleted",
+                    error: "This group no longer exists",
                     data: null,
                 });
             } else {
@@ -189,7 +174,7 @@ router.post("/mark/done", async function (req, res, next) {
     if (!resUser) {
         res.send({
             ok: false,
-            error: "Invalid sid",
+            error: "Invalid session",
             data: { sid: sid },
         });
     } else {
