@@ -34,7 +34,7 @@ const app = express();
 //Basic express init
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "../WebApp/static")));
+app.use(express.static(path.join(__dirname, "../../WebApp/static")));
 
 //Express sessions initialization: Note: add secret key to 'secret'.
 let mySession = expressSession({
