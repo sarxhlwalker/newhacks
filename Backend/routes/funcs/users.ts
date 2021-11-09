@@ -1,8 +1,23 @@
-import {User, userModel} from "../../models/users";
-import {funcs} from "../../funcs";
-import {globalFuncs} from "./globals";
+import { User, userModel } from "../../models/users";
+import { funcs } from "../../funcs";
+import { globalFuncs } from "./globals";
 
 import mongoose from "mongoose";
+
+export interface UserInfoUpdate {
+    newEmail: string;
+    newFirstname: string;
+    newLastname: string;
+    newPhone: string;
+    newPassword: string;
+}
+
+function isEmailValid(email: string) {
+    const re =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    return Boolean(email.toLowerCase().match(re));
+}
 
 export const userFuncs = {
     /*
@@ -17,15 +32,16 @@ export const userFuncs = {
     getUserFromLogin: async function (username: string, password: string) {
         return userModel.findOne({
             username: username,
-            password: password
+            password: password,
         });
     },
 
     // Updates the sid for a given user if the user is not undefined and returns the result
     updateUserSid: async function (user: User | null, sessionId: string) {
-        let result = (user) ? await userModel.updateOne({id: user.id}, {sid: sessionId}) : null;
-        return (result) ? globalFuncs.generateResSend(true, null, {sid: sessionId, result: result}) :
-            globalFuncs.generateResSend(false, "Incorrect Username or Password", null)
+        let result = user ? await userModel.updateOne({ id: user.id }, { sid: sessionId }) : null;
+        return result
+            ? globalFuncs.generateResSend(true, null, { sid: sessionId, result: result })
+            : globalFuncs.generateResSend(false, "Incorrect Username or Password", null);
     },
 
     // Create a user object from body arguments
@@ -49,6 +65,21 @@ export const userFuncs = {
         };
     },
 
+    validateUpdatedUserInfo: async function (info: UserInfoUpdate): Promise<string | null> {
+        if (!isEmailValid(info.newEmail)) return "Email is invalid";
+
+        // Check to see if the email is already registered
+        let repeat = await userModel.findOne({ email: info.newEmail });
+        if (repeat) return "This email is already in use";
+
+        // Validate other fields
+        if (!info.newFirstname || !info.newLastname) return "Name cannot be empty";
+        if (!info.newPassword) return "Password cannot be empty";
+        if (!info.newPhone) return "Invalid phone number";
+
+        return null;
+    },
+
     // Validates the user created from form data
     formValidation: async function (user: User) {
         let errs = [];
@@ -58,20 +89,16 @@ export const userFuncs = {
         if (!user.firstname || !user.lastname) errs.push("Name cannot be empty"); // Either first or last name exists
         if (!user.email) errs.push("Email cannot be empty");
 
-        // Regex to assert email conforms to email style a@b.c
-        const re =
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        let val = re.test(String(user.email).toLowerCase());
-        if (!val) errs.push("Email is invalid");
+        if (!isEmailValid(user.email)) errs.push("Email is invalid");
 
         // Check to see if the email is already registered
-        let repeat = await userModel.findOne({email: user.email});
+        let repeat = await userModel.findOne({ email: user.email });
         if (repeat) {
             errs.push("This email is already in use");
         }
 
         // Check to see if the username is already registered
-        let userRepeat = await userModel.findOne({username: user.username});
+        let userRepeat = await userModel.findOne({ username: user.username });
         if (userRepeat) {
             errs.push("Username already exists");
         }
@@ -84,12 +111,7 @@ export const userFuncs = {
         // Get the errors when validating the form
         let errors = await this.formValidation(user);
 
-        // Hash the password after validation
-        user.password = globalFuncs.md5password(user.password);
-
-        // If there are errors, then return them, if there are no errors create the model
-        return (errors.length > 0) ? globalFuncs.generateResSend(false, errors, null) :
-            globalFuncs.generateResSend(true, null, await userModel.create(user))
+        return errors;
     },
 
     // Return the user data from a user id
@@ -97,25 +119,29 @@ export const userFuncs = {
         let user = await globalFuncs.findUserOnId(id, true);
 
         // Front end data if user exists, otherwise return "Invalid id"
-        return (user) ? globalFuncs.generateResSend(true, null,{
-            firstname: user.firstname,
-            lastname: user.lastname,
-            username: user.username,
-            id: user.id,
-        }) : globalFuncs.generateResSend(false, "Invalid id", null);
+        return user
+            ? globalFuncs.generateResSend(true, null, {
+                  firstname: user.firstname,
+                  lastname: user.lastname,
+                  username: user.username,
+                  id: user.id,
+              })
+            : globalFuncs.generateResSend(false, "Invalid id", null);
     },
 
     // Return the user data from a user sid
-    userSidLookup: async function(sid: string){
+    userSidLookup: async function (sid: string) {
         let user = await globalFuncs.findUserOnId(sid, false);
 
         // Front end data if user exists, otherwise return "Invalid sid"
-        return (user) ? globalFuncs.generateResSend(true, null, {
-            firstname: user.firstname,
-            lastname: user.lastname,
-            email: user.email,
-            username: user.username,
-            id: user.id,
-        }) : globalFuncs.generateResSend(false, "Invalid sid", null);
-    }
-}
+        return user
+            ? globalFuncs.generateResSend(true, null, {
+                  firstname: user.firstname,
+                  lastname: user.lastname,
+                  email: user.email,
+                  username: user.username,
+                  id: user.id,
+              })
+            : globalFuncs.generateResSend(false, "Invalid sid", null);
+    },
+};

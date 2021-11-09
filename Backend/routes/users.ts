@@ -1,10 +1,11 @@
 // Helper functions
-import {globalFuncs} from "./funcs/globals";
-import {userFuncs} from "./funcs/users";
+import { globalFuncs } from "./funcs/globals";
+import { userFuncs } from "./funcs/users";
 
 // Models
-import {User, userModel} from "../models/users";
+import { User, userModel } from "../models/users";
 import express from "express";
+import { apiFunctionWrap, APIFunctionContext, resolveSessionID } from "./util";
 
 const router = express.Router();
 
@@ -15,7 +16,10 @@ const router = express.Router();
  */
 router.post("/login", async function (req, res, next) {
     // First get the user from login data
-    let user = await userFuncs.getUserFromLogin(req.body.username, globalFuncs.md5password(req.body.password));
+    let user = await userFuncs.getUserFromLogin(
+        req.body.username,
+        globalFuncs.md5password(req.body.password)
+    );
     // Then try and update the user sid
     let data = await userFuncs.updateUserSid(user, req.sessionID);
 
@@ -28,15 +32,25 @@ router.post("/login", async function (req, res, next) {
  * Takes in the firstname, lastname, username, phone number, email and password
  * Validates to ensure username and email are unique
  */
-router.post("/save", async function (req, res, next) {
-    // Create a new user
-    let user: User = await userFuncs.createNewUser(req.body);
+router.post(
+    "/save",
+    apiFunctionWrap(async (ctx: APIFunctionContext) => {
+        // Create a new user
+        let user: User = await userFuncs.createNewUser(ctx.req.body);
 
-    // Return the data after validating the user
-    let data = await userFuncs.validateNewUser(user);
+        user.password = globalFuncs.md5password(user.password);
 
-    res.send(data);
-});
+        // Return the data after validating the user
+        let errors = await userFuncs.validateNewUser(user);
+
+        if (errors.length) {
+            ctx.replyWithError(errors[0]);
+        }
+
+        await userModel.create(user);
+        return user;
+    })
+);
 
 /*
  * Data route
@@ -61,6 +75,39 @@ router.post("/lookup", async function (req, res, next) {
 
     res.send(data);
 });
+
+/*
+    Allow a user to update their personal information
+*/
+router.post(
+    "/update-info",
+    apiFunctionWrap(async (ctx: APIFunctionContext) => {
+        let body = ctx.req.body;
+
+        let user = await resolveSessionID(ctx, body.sid);
+
+        let errorMessage = await userFuncs.validateUpdatedUserInfo({
+            newEmail: body.newEmail,
+            newFirstname: body.newFirstname,
+            newLastname: body.newLastname,
+            newPassword: body.newPassword,
+            newPhone: body.newPhone,
+        });
+
+        if (errorMessage !== null) ctx.replyWithError(errorMessage);
+
+        await userModel.updateOne(
+            { user: user.id },
+            {
+                email: body.newEmail,
+                firstname: body.newFirstname,
+                lastname: body.newLastname,
+                password: globalFuncs.md5password(body.newPassword),
+                phone: body.newPhone,
+            }
+        );
+    })
+);
 
 export function users_getRouter() {
     return router;
