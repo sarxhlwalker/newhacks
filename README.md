@@ -1,6 +1,6 @@
 # Peer Pressure Panda
 
-Developed in 24 hours, Peer Pressure Panda is a social media app that won [IEEE UofT's 2021 NewHacks](https://newhacks-2021.devpost.com/) Best Productivity Hack category. It incentivizes productivity by letting students create groups for their classes at school in which they will be notified by text message when one of their friends completes an assignment for that class.
+Developed in 24 hours, Peer Pressure Panda is a social media app that won [IEEE UofT's 2021 NewHacks](https://newhacks-2021.devpost.com/) "Best Productivity Hack" category. It incentivizes productivity by letting students create groups for their classes at school in which they will be notified by text message when one of their friends completes an assignment for that class.
 
 ![Screenshot](https://cdn.discordapp.com/attachments/906910291776925696/906910298391334952/unknown.png)
 
