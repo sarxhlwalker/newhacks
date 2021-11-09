@@ -26,7 +26,7 @@ export function isProfane(word: string) {
 }
 
 export function isStringEmpty(s: string) {
-    return s.trim().length > 0;
+    return s.trim().length === 0;
 }
 
 export function isAlphanumeric(s: string) {
