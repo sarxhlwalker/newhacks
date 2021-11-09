@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import { model, Schema } from "mongoose";
 
 export interface Assignment {
     _id: string;
@@ -10,7 +10,7 @@ export interface Assignment {
     groupId: string;
 }
 
-export const assModel = mongoose.model<Assignment>(
+export const assModel = model<Assignment>(
     "assignments",
     new Schema<Assignment>({
         _id: { type: String, required: true },

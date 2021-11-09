@@ -1,10 +1,9 @@
-const express = require("express");
+import { funcs } from "../funcs";
+import { User, userModel } from "../models/users";
+
+import mongoose from "mongoose";
+import express from "express";
 const router = express.Router();
-
-const funcs = require("../funcs.js");
-
-const userModel = require("../models/users");
-const mongoose = require("mongoose");
 
 // Check login post
 /*
@@ -16,6 +15,7 @@ router.post("/login", async function (req, res, next) {
         username: req.body.username,
         password: funcs.md5password(req.body.password),
     });
+
     if (user) {
         let query = { username: req.body.username, password: funcs.md5password(req.body.password) };
 
@@ -81,7 +81,7 @@ router.post("/save", async function (req, res, next) {
     }
 
     let user = {
-        _id: new mongoose.Types.ObjectId(),
+        _id: new mongoose.Types.ObjectId().toString(),
         id: ps_id,
         sid: myApid,
         username: req.body.username,
@@ -93,7 +93,7 @@ router.post("/save", async function (req, res, next) {
         groups: JSON.stringify([]),
     };
 
-    errors = await funcs.formValidation(user);
+    let errors = await funcs.formValidation(user);
     if (errors.length > 0) {
         res.send({
             ok: false,
@@ -138,4 +138,6 @@ router.post("/data", async function (req, res, next) {
     }
 });
 
-module.exports = router;
+export function users_getRouter() {
+    return router;
+}

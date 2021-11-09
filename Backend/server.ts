@@ -8,42 +8,46 @@ import path from "path";
 import cors from "cors";
 import http from "http";
 import bodyParser from "body-parser";
+import expressSession from "express-session";
 
 const debug = _debug("localhost:server");
 
 //Mongoose Models
-const userModel = require("./models/users");
+import { userModel } from "./models/users";
 
 //Initialize mongoose models
 import mongoose, { Error } from "mongoose";
 
 //Express routes
-const usersRouter = require("./routes/users");
-const groupsRouter = require('./routes/groups');
-const assignmentsRouter = require('./routes/assignments');
+import { assignments_getRouter } from "./routes/assignments";
+import { groups_getRouter } from "./routes/groups";
+import { users_getRouter } from "./routes/users";
 
 //Connect to atlas
-mongoose.connect(process.env.CONNECTION_URL!, {useNewUrlParser: true, useUnifiedTopology: true} as any);
+mongoose.connect(process.env.CONNECTION_URL!, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+} as any);
 
 const app = express();
 
 //Basic express init
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "../WebApp/static")));
 
 //Express sessions initialization: Note: add secret key to 'secret'.
-let my_session = require("express-session")({
-    secret: process.env.SESSION_KEY,
+let mySession = expressSession({
+    secret: process.env.SESSION_KEY!,
     resave: true,
     saveUninitialized: true,
 });
-app.use(my_session);
+app.use(mySession);
 
 //Use the express routes
-app.use("/users", usersRouter);
-app.use('/groups', groupsRouter);
-app.use('/assignments', assignmentsRouter);
+app.use("/users", users_getRouter());
+app.use("/groups", groups_getRouter());
+app.use("/assignments", assignments_getRouter());
 
 //CORS can be removed now, (added it during a dual server boot setup)
 app.use(cors());
