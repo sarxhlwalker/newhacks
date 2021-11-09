@@ -48,6 +48,6 @@ sass sass:static/styles
 
 to compile the necessary components for the project.
 
-3. Navigate backwards into the root directory, then into `Backend/` and run `npm i` to install any necessary dependencies for the server.
+3. Navigate backwards into the root directory, then into `Backend/` and run `npm i` to install any necessary dependencies for the server, and then run `tsc` to compile the server.
 
-4. Still in `Backend/`, run `node server.js`
+4. Still in `Backend/`, run `node build/server.js`
