@@ -46,31 +46,6 @@ export const groupsFuncs = {
         return groupId;
     },
 
-    // Create a group model given the group name and the user
-    createNewGroup: async function (name: string, user: User | null) {
-        let groupId = await this.generateUniqueGroupId();
-
-        // If the user exists, then create and send a new model, otherwise send null
-        return (user && name)
-            ? {
-                _id: new mongoose.Types.ObjectId().toString(),
-                groupId: groupId,
-                name: name,
-                leaderId: user.id,
-                leaderName: user.username,
-                members: JSON.stringify([user.id]),
-                assignments: JSON.stringify([]),
-            }
-            : null;
-    },
-
-    // Validate a new group, ensuring they have a non-empty name
-    validateNewGroup: async function (group: Group | null) {
-        let errs: string[] = [];
-        // At this stage, if group is null, then errs will stop the flow
-        return (group && group.name) ? [] : errs.concat('Name cannot be empty');
-    },
-
     // If the group object exists, then save it to mongodb and return result. Otherwise return null
     saveNewGroup: async function (group: Group | null) {
         return (group) ? await groupModel.create(group) : null;
@@ -86,7 +61,7 @@ export const groupsFuncs = {
 
         // Update the user's groups
         let updateResult =
-            (currGroups && group && user) // @ian Why do I need to put the && user here?
+            (currGroups && group && user)
                 ? await userModel.updateOne({id: user.id},
                     {groups: JSON.stringify(currGroups.concat(group.groupId))})
                 : null;

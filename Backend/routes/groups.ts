@@ -1,10 +1,11 @@
-import {groupModel} from "../models/groups";
-import {User, userModel} from "../models/users";
+import { Group, groupModel } from "../models/groups";
+import { User, userModel } from "../models/users";
 
 import mongoose from "mongoose";
 import express from "express";
-import {globalFuncs} from "./funcs/globals";
-import {groupsFuncs} from "./funcs/groups";
+import { globalFuncs } from "./funcs/globals";
+import { groupsFuncs } from "./funcs/groups";
+import { APIFunctionContext, apiFunctionWrap, resolveSessionID } from "./util";
 
 const router = express.Router();
 
@@ -13,35 +14,60 @@ const router = express.Router();
  * Sends back the list of groups the user is enrolled in
  * Takes in the user sid
  */
-router.post("/get", async function (req, res) {
-    // Find a user with the given sid
-    let user = await globalFuncs.findUserOnId(req.body.sid, false);
+router.post(
+    "/get",
+    apiFunctionWrap(async (ctx: APIFunctionContext) => {
+        // Find a user with the given sid
+        let user = await resolveSessionID(ctx, ctx.req.body.sid);
 
-    // Generate the groups list data to be sent
-    let data = await groupsFuncs.getUserGroups(user);
+        // Generate the groups list data to be sent
+        let data = await groupsFuncs.getUserGroups(user);
 
-    res.send(data);
-});
+        return data;
+    })
+);
 
 /*
  * Create a new group with the user as the leader (Takes in group name, and user sid, returns the result of trying to
  * save the group to the model
  */
-router.post("/create", async function (req, res) {
-    // Find a user with the given sid [User | null returned]
-    let user = await globalFuncs.findUserOnId(req.body.sid, false);
+router.post(
+    "/create",
+    apiFunctionWrap(async (ctx: APIFunctionContext) => {
+        let body = ctx.req.body;
 
-    // Create a group with user as leader [ Group | null returned based on user]
-    let group = await groupsFuncs.createNewGroup(req.body.name, user);
+        // Find a user with the given sid
+        let user = await resolveSessionID(ctx, body.sid);
 
-    // Validate the group [ [] if groups is not null and groups.name is not null | errs[] ]
-    let errs = await groupsFuncs.validateNewGroup(group);
+        // Create a group with user as leader [ Group | null returned based on user]
+        let group: Group = {
+            _id: new mongoose.Types.ObjectId().toString(),
+            groupId: body.groupId,
+            name: body.name,
+            leaderId: user.id,
+            leaderName: user.username,
+            members: JSON.stringify([user.id]),
+            assignments: JSON.stringify([]),
+        };
 
-    // Generate the data to be sent back
-    let data = await groupsFuncs.updateGroups(group, user, errs);
+        // Validate the group [ [] if groups is not null and groups.name is not null | errs[] ]
+        if (!group.name) {
+            ctx.replyWithError("Group name cannot be empty");
+        }
 
-    res.send(data);
-});
+        // Generate the group
+        await groupModel.create(group);
+        // Get the current groups for the new group leader
+        let currGroups: string[] = JSON.parse(user.groups);
+        // Add this new group to the existing list of groups; update database
+        await userModel.updateOne(
+            { id: user.id },
+            { groups: JSON.stringify(currGroups.concat(group.groupId)) }
+        );
+        
+        return null; // send ok:true with no data
+    })
+);
 
 /*
  * Join a group, takes in the user sid and group id (5 alpha-num), returns the result of trying to update
@@ -49,15 +75,15 @@ router.post("/create", async function (req, res) {
  */
 router.post("/join", async function (req, res) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({sid: sid});
+    let resUser = await userModel.findOne({ sid: sid });
     if (!resUser) {
         res.send({
             ok: false,
             error: "Invalid sid",
-            data: {sid: sid},
+            data: { sid: sid },
         });
     } else {
-        let groupFind = await groupModel.findOne({groupId: req.body.groupId});
+        let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
         if (!groupFind) {
             res.send({
                 ok: false,
@@ -75,17 +101,17 @@ router.post("/join", async function (req, res) {
                 });
             } else {
                 let res1 = await groupModel.updateOne(
-                    {groupId: groupFind.groupId},
-                    {members: JSON.stringify(curr_members.concat(resUser.id))}
+                    { groupId: groupFind.groupId },
+                    { members: JSON.stringify(curr_members.concat(resUser.id)) }
                 );
                 let res2 = await userModel.updateOne(
-                    {id: resUser.id},
-                    {groups: JSON.stringify(curr_groups.concat(groupFind.groupId))}
+                    { id: resUser.id },
+                    { groups: JSON.stringify(curr_groups.concat(groupFind.groupId)) }
                 );
                 res.send({
                     ok: true,
                     error: null,
-                    data: {updateGroup: res1, updateUser: res2},
+                    data: { updateGroup: res1, updateUser: res2 },
                 });
             }
         }
@@ -98,17 +124,17 @@ router.post("/join", async function (req, res) {
  */
 router.post("/leave", async function (req, res) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({sid: sid});
+    let resUser = await userModel.findOne({ sid: sid });
 
     if (!resUser) {
         res.send({
             ok: false,
             error: "Invalid sid",
-            data: {sid: sid},
+            data: { sid: sid },
         });
     } else {
         // Check if user is in the specified group
-        let groupFind = await groupModel.findOne({groupId: req.body.groupId});
+        let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
 
         if (!groupFind) {
             res.send({
@@ -137,20 +163,20 @@ router.post("/leave", async function (req, res) {
                 let res1;
                 if (gm.length > 0) {
                     res1 = await groupModel.updateOne(
-                        {groupId: groupFind.groupId},
-                        {members: JSON.stringify(gm)}
+                        { groupId: groupFind.groupId },
+                        { members: JSON.stringify(gm) }
                     );
                 } else {
-                    res1 = await groupModel.deleteOne({groupId: groupFind.groupId});
+                    res1 = await groupModel.deleteOne({ groupId: groupFind.groupId });
                 }
                 let res2 = await userModel.updateOne(
-                    {id: resUser.id},
-                    {groups: JSON.stringify(ug)}
+                    { id: resUser.id },
+                    { groups: JSON.stringify(ug) }
                 );
                 res.send({
                     ok: true,
                     error: null,
-                    data: {res1: res1, res2: res2},
+                    data: { res1: res1, res2: res2 },
                 });
             }
         }
@@ -163,15 +189,15 @@ router.post("/leave", async function (req, res) {
  */
 router.post("/kick", async function (req, res) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({sid: sid});
+    let resUser = await userModel.findOne({ sid: sid });
     if (!resUser) {
         res.send({
             ok: false,
             error: "Invalid sid",
-            data: {sid: sid},
+            data: { sid: sid },
         });
     } else {
-        let groupFind = await groupModel.findOne({groupId: req.body.groupId});
+        let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
         if (!groupFind) {
             res.send({
                 ok: false,
@@ -189,7 +215,7 @@ router.post("/kick", async function (req, res) {
             } else {
                 // Check to see whether username exists in group
                 let groupMembers: string[] = JSON.parse(groupFind.members);
-                let userToKick = await userModel.findOne({id: req.body.userId});
+                let userToKick = await userModel.findOne({ id: req.body.userId });
 
                 if (!userToKick) {
                     res.send({
@@ -220,17 +246,17 @@ router.post("/kick", async function (req, res) {
                     });
 
                     let res1 = await groupModel.updateOne(
-                        {groupId: groupFind.groupId},
-                        {members: JSON.stringify(groupMembers)}
+                        { groupId: groupFind.groupId },
+                        { members: JSON.stringify(groupMembers) }
                     );
                     let res2 = await userModel.updateOne(
-                        {id: userToKick.id},
-                        {groups: JSON.stringify(currGroups)}
+                        { id: userToKick.id },
+                        { groups: JSON.stringify(currGroups) }
                     );
                     res.send({
                         ok: true,
                         error: null,
-                        data: {res1: res1, res2: res2},
+                        data: { res1: res1, res2: res2 },
                     });
                 }
             }
@@ -244,15 +270,15 @@ router.post("/kick", async function (req, res) {
  */
 router.post("/delete", async function (req, res) {
     let sid = req.body.sid;
-    let resUser = await userModel.findOne({sid: sid});
+    let resUser = await userModel.findOne({ sid: sid });
     if (!resUser) {
         res.send({
             ok: false,
             error: "Invalid sid",
-            data: {sid: sid},
+            data: { sid: sid },
         });
     } else {
-        let groupFind = await groupModel.findOne({groupId: req.body.groupId});
+        let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
         if (!groupFind) {
             res.send({
                 ok: false,
