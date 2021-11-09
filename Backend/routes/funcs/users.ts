@@ -10,6 +10,7 @@ export interface UserInfoUpdate {
     newLastname: string;
     newPhone: string;
     newPassword: string;
+    previousEmail: string;
 }
 
 function isEmailValid(email: string) {
@@ -70,7 +71,8 @@ export const userFuncs = {
 
         // Check to see if the email is already registered
         let repeat = await userModel.findOne({ email: info.newEmail });
-        if (repeat) return "This email is already in use";
+        let didEmailChange = info.newEmail !== info.previousEmail;
+        if (repeat && didEmailChange) return "This email is already in use";
 
         // Validate other fields
         if (!info.newFirstname || !info.newLastname) return "Name cannot be empty";

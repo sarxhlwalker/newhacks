@@ -92,6 +92,7 @@ router.post(
             newLastname: body.newLastname,
             newPassword: body.newPassword,
             newPhone: body.newPhone,
+            previousEmail: user.email,
         });
 
         if (errorMessage !== null) ctx.replyWithError(errorMessage);
@@ -106,6 +107,8 @@ router.post(
                 phone: body.newPhone,
             }
         );
+
+        return null;
     })
 );
 
