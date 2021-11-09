@@ -16,7 +16,7 @@ const debug = _debug("localhost:server");
 import { userModel } from "./models/users";
 
 //Initialize mongoose models
-import mongoose, { Error } from "mongoose";
+import mongoose, { Error, mongo } from "mongoose";
 
 //Express routes
 import { assignments_getRouter } from "./routes/assignments";
@@ -117,4 +117,8 @@ function onListening() {
     const addr = server.address()!;
     const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
     console.log("Listening on " + bind);
+
+    // userModel.find().then((n) => {
+    //     console.log(n);
+    // });
 }

@@ -2,7 +2,7 @@ import { model, Schema } from "mongoose";
 
 export interface Group {
     _id: string;
-    groupId: string;
+    groupCode: string;
     name: string;
     leaderId: string;
     leaderName: string;
@@ -14,7 +14,7 @@ export const groupModel = model<Group>(
     "groups",
     new Schema<Group>({
         _id: { type: String, required: true },
-        groupId: { type: String, required: false },
+        groupCode: String,
         name: { type: String, required: true },
         leaderId: { type: String, required: true },
         leaderName: { type: String, required: true },

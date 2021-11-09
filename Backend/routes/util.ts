@@ -71,14 +71,14 @@ export function apiFunctionWrap(func: APIEndpointFunction) {
 */
 
 export async function safeGetAssignment(ctx: APIFunctionContext, id: string) {
-    let assignment = await assModel.findOne({ assignmentId: id });
+    let assignment = await assModel.findOne({ id: id });
 
     if (!assignment) ctx.replyWithError("The requested assignment was not found.");
     return assignment as Assignment;
 }
 
 export async function safeGetGroup(ctx: APIFunctionContext, id: string) {
-    let group = await groupModel.findOne({ groupId: id });
+    let group = await groupModel.findOne({ id: id });
 
     if (!group) ctx.replyWithError("The requested group was not found.");
     return group as Group;

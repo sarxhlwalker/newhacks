@@ -14,34 +14,20 @@ export const groupsFuncs = {
      * Changing data (panda.users) in
      */
 
-    // Get a given user's groups
-    getUserGroups: async function (user: User | null) {
-        // Parse the list of groups from the user data if the user is not null
-        let groups = user ? JSON.parse(user.groups) : null;
 
-        let groupsList = [];
-
-        for (let group of groups) {
-            groupsList.push(await groupModel.findOne({ groupId: group }));
-        }
-
-        return groups
-            ? globalFuncs.generateResSend(true, null, { groups: groupsList })
-            : globalFuncs.generateResSend(false, "Invalid sid", null);
-    },
 
     // Generate a unique groupId
-    generateUniqueGroupId: async function () {
+    generateUniqueGroupCode: async function () {
         // Create a random 5 bit alpha-num
-        let groupId = globalFuncs.generateTextId(5);
+        let code = globalFuncs._generateNDigitCode(5);
         // Check if the generated Id already exists
-        let repeats = await groupModel.findOne({ groupId: groupId });
+        let repeats = await groupModel.findOne({ groupCode: code });
 
         while (repeats) {
-            groupId = globalFuncs.generateTextId(5);
-            repeats = await groupModel.findOne({ groupId: groupId });
+            code = globalFuncs._generateNDigitCode(5);
+            repeats = await groupModel.findOne({ groupCode: code });
         }
 
-        return groupId;
+        return code;
     },
 };

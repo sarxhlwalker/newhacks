@@ -97,16 +97,13 @@ router.post(
 
         if (errorMessage !== null) ctx.replyWithError(errorMessage);
 
-        await userModel.updateOne(
-            { id: user.id },
-            {
-                email: body.newEmail,
-                firstname: body.newFirstname,
-                lastname: body.newLastname,
-                password: globalFuncs.md5password(body.newPassword),
-                phone: body.newPhone,
-            }
-        );
+        await userModel.findByIdAndUpdate(user._id, {
+            email: body.newEmail,
+            firstname: body.newFirstname,
+            lastname: body.newLastname,
+            password: globalFuncs.md5password(body.newPassword),
+            phone: body.newPhone,
+        });
 
         return null;
     })

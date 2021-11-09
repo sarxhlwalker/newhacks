@@ -39,7 +39,7 @@ export const userFuncs = {
 
     // Updates the sid for a given user if the user is not undefined and returns the result
     updateUserSid: async function (user: User | null, sessionId: string) {
-        let result = user ? await userModel.updateOne({ id: user.id }, { sid: sessionId }) : null;
+        let result = user ? await userModel.findByIdAndUpdate(user._id, { sid: sessionId }) : null;
         return result
             ? globalFuncs.generateResSend(true, null, { sid: sessionId, result: result })
             : globalFuncs.generateResSend(false, "Incorrect Username or Password", null);
@@ -48,13 +48,11 @@ export const userFuncs = {
     // Create a user object from body arguments
     createNewUser: async function (body: any) {
         // Generate Unique Id's for a user
-        let id = await globalFuncs.generateUniqueId();
         let sid = await globalFuncs.generateUniqueSid();
 
         // Return the user
         return {
             _id: new mongoose.Types.ObjectId().toString(),
-            id: id,
             sid: sid,
             username: body.username,
             password: body.password,
@@ -62,7 +60,7 @@ export const userFuncs = {
             lastname: body.lastname,
             phone: body.phonenumber,
             email: body.email,
-            groups: JSON.stringify([]),
+            groups: [],
         };
     },
 

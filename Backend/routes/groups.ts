@@ -21,7 +21,7 @@ router.post(
         let user = await resolveSessionID(ctx, ctx.req.body.sid);
 
         // Generate the groups list data to be sent
-        let groupIds = JSON.parse(user.groups) as string[];
+        let groupIds = user.groups;
         let groups = [];
         for (let id of groupIds) {
             groups.push(await safeGetGroup(ctx, id));
@@ -46,11 +46,11 @@ router.post(
         // Create a group with user as leader [ Group | null returned based on user]
         let group: Group = {
             _id: new mongoose.Types.ObjectId().toString(),
-            groupId: globalFuncs.generateTextId(5),
+            groupCode: await groupsFuncs.generateUniqueGroupCode(),
             name: body.name,
-            leaderId: user.id,
+            leaderId: user._id,
             leaderName: user.username,
-            members: JSON.stringify([user.id]),
+            members: JSON.stringify([user._id]),
             assignments: JSON.stringify([]),
         };
 
@@ -62,12 +62,9 @@ router.post(
         // Generate the group
         await groupModel.create(group);
         // Get the current groups for the new group leader
-        let currGroups: string[] = JSON.parse(user.groups);
+        let currGroups: string[] = user.groups;
         // Add this new group to the existing list of groups; update database
-        await userModel.updateOne(
-            { id: user.id },
-            { groups: JSON.stringify(currGroups.concat(group.groupId)) }
-        );
+        await userModel.findByIdAndUpdate(user._id, { groups: currGroups.concat(group._id) });
 
         return null; // send ok:true with no data
     })
@@ -86,19 +83,17 @@ router.post(
         let groupFind = await safeGetGroup(ctx, body.groupId);
 
         let members = JSON.parse(groupFind.members);
-        let currentGroups = JSON.parse(resUser.groups);
-        if (members.includes(resUser.id) || currentGroups.includes(groupFind.groupId)) {
+        let currentGroups = resUser.groups;
+        if (members.includes(resUser._id) || currentGroups.includes(groupFind._id)) {
             ctx.replyWithError("You are already in this group");
         }
 
-        let res1 = await groupModel.updateOne(
-            { groupId: groupFind.groupId },
-            { members: JSON.stringify(members.concat(resUser.id)) }
-        );
-        let res2 = await userModel.updateOne(
-            { id: resUser.id },
-            { groups: JSON.stringify(currentGroups.concat(groupFind.groupId)) }
-        );
+        let res1 = await groupModel.findByIdAndUpdate(groupFind._id, {
+            members: JSON.stringify(members.concat(resUser._id)),
+        });
+        let res2 = await userModel.findByIdAndUpdate(resUser._id, {
+            groups: currentGroups.concat(groupFind._id),
+        });
 
         return { updateGroup: res1, updateUser: res2 };
     })
@@ -117,27 +112,24 @@ router.post(
         let groupFind = await safeGetGroup(ctx, body.groupId);
         let groupMembers: string[] = JSON.parse(groupFind.members);
 
-        if (!groupMembers.includes(resUser.id)) {
+        if (!groupMembers.includes(resUser._id)) {
             ctx.replyWithError("You are not in this group");
         }
-        let userGroups: string[] = JSON.parse(resUser.groups);
+        let userGroups: string[] = resUser.groups;
 
         let gm = groupMembers.filter(function (value) {
-            return value !== resUser!.id;
+            return value !== resUser!._id;
         });
-        let ug = userGroups.filter(function (value) {
-            return value !== groupFind!.groupId;
-        });
+        let ug = userGroups.filter((value) => value !== groupFind!._id);
         let res1;
         if (gm.length > 0) {
-            res1 = await groupModel.updateOne(
-                { groupId: groupFind.groupId },
-                { members: JSON.stringify(gm) }
-            );
+            res1 = await groupModel.findByIdAndUpdate(groupFind._id, {
+                members: JSON.stringify(gm),
+            });
         } else {
-            res1 = await groupModel.deleteOne({ groupId: groupFind.groupId });
+            res1 = await groupModel.deleteOne({ id: groupFind._id });
         }
-        let res2 = await userModel.updateOne({ id: resUser.id }, { groups: JSON.stringify(ug) });
+        let res2 = await userModel.updateOne({ id: resUser._id }, { groups: ug });
 
         return { res1: res1, res2: res2 };
     })
@@ -157,7 +149,7 @@ router.post("/kick", async function (req, res) {
             data: { sid: sid },
         });
     } else {
-        let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
+        let groupFind = await groupModel.findOne({ id: req.body.groupId });
         if (!groupFind) {
             res.send({
                 ok: false,
@@ -200,18 +192,16 @@ router.post("/kick", async function (req, res) {
                     groupMembers = groupMembers.filter(function (value) {
                         return value !== userToKick!.id;
                     });
-                    let currGroups: string[] = JSON.parse(resUser.groups);
-                    currGroups = currGroups.filter(function (value) {
-                        return value !== groupFind!.groupId;
-                    });
+                    let currGroups: string[] = resUser.groups;
+                    currGroups = currGroups.filter((value) => value !== groupFind!.id);
 
                     let res1 = await groupModel.updateOne(
-                        { groupId: groupFind.groupId },
+                        { id: groupFind.id },
                         { members: JSON.stringify(groupMembers) }
                     );
                     let res2 = await userModel.updateOne(
                         { id: userToKick.id },
-                        { groups: JSON.stringify(currGroups) }
+                        { groups: currGroups }
                     );
                     res.send({
                         ok: true,
@@ -238,7 +228,7 @@ router.post("/delete", async function (req, res) {
             data: { sid: sid },
         });
     } else {
-        let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
+        let groupFind = await groupModel.findOne({ id: req.body.groupId });
         if (!groupFind) {
             res.send({
                 ok: false,
