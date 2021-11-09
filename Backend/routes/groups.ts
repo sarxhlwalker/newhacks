@@ -3,9 +3,8 @@ import { User, userModel } from "../models/users";
 
 import mongoose from "mongoose";
 import express from "express";
-import { globalFuncs } from "./funcs/globals";
 import { groupsFuncs } from "./funcs/groups";
-import { APIFunctionContext, apiFunctionWrap, resolveSessionID } from "./util";
+import { APIFunctionContext, apiFunctionWrap, resolveSessionID, safeGetGroup } from "./util";
 
 const router = express.Router();
 
@@ -21,9 +20,13 @@ router.post(
         let user = await resolveSessionID(ctx, ctx.req.body.sid);
 
         // Generate the groups list data to be sent
-        let data = await groupsFuncs.getUserGroups(user);
+        let groupIds = JSON.parse(user.groups) as string[];
+        let groups = [];
+        for (let id of groupIds) {
+            groups.push(await safeGetGroup(ctx, id));
+        }
 
-        return data;
+        return { groups: groups };
     })
 );
 
@@ -73,115 +76,71 @@ router.post(
  * Join a group, takes in the user sid and group id (5 alpha-num), returns the result of trying to update
  * the user's model group data
  */
-router.post("/join", async function (req, res) {
-    let sid = req.body.sid;
-    let resUser = await userModel.findOne({ sid: sid });
-    if (!resUser) {
-        res.send({
-            ok: false,
-            error: "Invalid sid",
-            data: { sid: sid },
-        });
-    } else {
-        let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
-        if (!groupFind) {
-            res.send({
-                ok: false,
-                error: "Group not found",
-                data: null,
-            });
-        } else {
-            let curr_members = JSON.parse(groupFind.members);
-            let curr_groups = JSON.parse(resUser.groups);
-            if (curr_members.includes(resUser.id) || curr_groups.includes(groupFind.groupId)) {
-                res.send({
-                    ok: false,
-                    error: "Already in group",
-                    data: null,
-                });
-            } else {
-                let res1 = await groupModel.updateOne(
-                    { groupId: groupFind.groupId },
-                    { members: JSON.stringify(curr_members.concat(resUser.id)) }
-                );
-                let res2 = await userModel.updateOne(
-                    { id: resUser.id },
-                    { groups: JSON.stringify(curr_groups.concat(groupFind.groupId)) }
-                );
-                res.send({
-                    ok: true,
-                    error: null,
-                    data: { updateGroup: res1, updateUser: res2 },
-                });
-            }
+router.post(
+    "/join",
+    apiFunctionWrap(async (ctx: APIFunctionContext) => {
+        let body = ctx.req.body;
+        let resUser = await resolveSessionID(ctx, body.sid);
+
+        let groupFind = await safeGetGroup(ctx, body.groupId);
+
+        let members = JSON.parse(groupFind.members);
+        let currentGroups = JSON.parse(resUser.groups);
+        if (members.includes(resUser.id) || currentGroups.includes(groupFind.groupId)) {
+            ctx.replyWithError("You are already in this group");
         }
-    }
-});
+
+        let res1 = await groupModel.updateOne(
+            { groupId: groupFind.groupId },
+            { members: JSON.stringify(members.concat(resUser.id)) }
+        );
+        let res2 = await userModel.updateOne(
+            { id: resUser.id },
+            { groups: JSON.stringify(currentGroups.concat(groupFind.groupId)) }
+        );
+
+        return { updateGroup: res1, updateUser: res2 };
+    })
+);
 
 /*
  * Leave a group
  * Takes in sid and groupId
  */
-router.post("/leave", async function (req, res) {
-    let sid = req.body.sid;
-    let resUser = await userModel.findOne({ sid: sid });
+router.post(
+    "/leave",
+    apiFunctionWrap(async (ctx: APIFunctionContext) => {
+        let body = ctx.req.body;
+        let resUser = await resolveSessionID(ctx, body.sid);
 
-    if (!resUser) {
-        res.send({
-            ok: false,
-            error: "Invalid sid",
-            data: { sid: sid },
-        });
-    } else {
-        // Check if user is in the specified group
-        let groupFind = await groupModel.findOne({ groupId: req.body.groupId });
+        let groupFind = await safeGetGroup(ctx, body.groupId);
+        let groupMembers: string[] = JSON.parse(groupFind.members);
 
-        if (!groupFind) {
-            res.send({
-                ok: false,
-                error: "Group not found",
-                data: null,
-            });
-        } else {
-            let groupMembers: string[] = JSON.parse(groupFind.members);
-
-            if (!groupMembers.includes(resUser.id)) {
-                res.send({
-                    ok: false,
-                    error: "Not in group",
-                    data: null,
-                });
-            } else {
-                let userGroups: string[] = JSON.parse(resUser.groups);
-
-                let gm = groupMembers.filter(function (value) {
-                    return value !== resUser!.id;
-                });
-                let ug = userGroups.filter(function (value) {
-                    return value !== groupFind!.groupId;
-                });
-                let res1;
-                if (gm.length > 0) {
-                    res1 = await groupModel.updateOne(
-                        { groupId: groupFind.groupId },
-                        { members: JSON.stringify(gm) }
-                    );
-                } else {
-                    res1 = await groupModel.deleteOne({ groupId: groupFind.groupId });
-                }
-                let res2 = await userModel.updateOne(
-                    { id: resUser.id },
-                    { groups: JSON.stringify(ug) }
-                );
-                res.send({
-                    ok: true,
-                    error: null,
-                    data: { res1: res1, res2: res2 },
-                });
-            }
+        if (!groupMembers.includes(resUser.id)) {
+            ctx.replyWithError("You are not in this group");
         }
-    }
-});
+        let userGroups: string[] = JSON.parse(resUser.groups);
+
+        let gm = groupMembers.filter(function (value) {
+            return value !== resUser!.id;
+        });
+        let ug = userGroups.filter(function (value) {
+            return value !== groupFind!.groupId;
+        });
+        let res1;
+        if (gm.length > 0) {
+            res1 = await groupModel.updateOne(
+                { groupId: groupFind.groupId },
+                { members: JSON.stringify(gm) }
+            );
+        } else {
+            res1 = await groupModel.deleteOne({ groupId: groupFind.groupId });
+        }
+        let res2 = await userModel.updateOne({ id: resUser.id }, { groups: JSON.stringify(ug) });
+
+        return { res1: res1, res2: res2 };
+    })
+);
 
 /*
  * Removes members from a group if the user requesting to do so is the leader
