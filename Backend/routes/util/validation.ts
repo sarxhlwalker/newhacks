@@ -11,13 +11,18 @@ export function isProfane(word: string) {
     */
 
     word = word.trim().toLowerCase();
+    word = word.replace(/0/g, "o");
+    word = word.replace(/1/g, "i");
+    word = word.replace(/4/g, "a");
+    word = word.replace(/5/g, "s");
+    word = word.replace(/7/g, "t");
+    word = word.replace(/_/g, "");
 
     for (let bannedWord of PROFANITY) {
         if (bannedWord.length <= 3) {
             if (word == bannedWord) return true;
         } else {
-            let isProfane =
-                word.includes(bannedWord) || word.includes(bannedWord.replace(/_/g, ""));
+            let isProfane = word.includes(bannedWord);
             if (isProfane) return true;
         }
     }

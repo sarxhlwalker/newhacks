@@ -1,4 +1,4 @@
-#Perhttps://github.com/RobertJGabriel/Google_profanity_words
+#Perhttps://github.com/RobertJGabriel/Googleprofanitywords
 
 4r5e
 5h1t
@@ -10,14 +10,14 @@ ar5e
 arrse
 arse
 ass
-ass_fucker
+assfucker
 asses
 assfucker
 assfukka
 asshole
 assholes
 asswhole
-a_s_s
+ass
 b!tch
 b00bs
 b17ch
@@ -74,7 +74,7 @@ clitoris
 clits
 cnut
 cock
-cock_sucker
+cocksucker
 cockface
 cockhead
 cockmunch
@@ -123,7 +123,7 @@ dink
 dinks
 dirsa
 dlck
-dog_fucker
+dogfucker
 doggin
 dogging
 donkeyribber
@@ -203,7 +203,7 @@ fukwhit
 fukwit
 fux
 fux0r
-f_u_c_k
+fuck
 gangbang
 gangbanged
 gangbangs
@@ -211,8 +211,8 @@ gaylord
 gaysex
 goatse
 God
-god_dam
-god_damned
+goddam
+goddamned
 goddamn
 goddamned
 hardcoresex
@@ -226,10 +226,10 @@ hore
 horniest
 horny
 hotsex
-jack_off
+jackoff
 jackoff
 jap
-jerk_off
+jerkoff
 jism
 jiz
 jizm
@@ -262,7 +262,7 @@ m45terbate
 ma5terb8
 ma5terbate
 masochist
-master_bate
+masterbate
 masterb8
 masterbat*
 masterbat3
@@ -270,7 +270,7 @@ masterbate
 masterbation
 masterbations
 masturbate
-mo_fo
+mofo
 mof0
 mofo
 mothafuck
@@ -404,10 +404,10 @@ sluts
 smegma
 smut
 snatch
-son_of_a_bitch
+sonofabitch
 spac
 spunk
-s_h_i_t
+shit
 t1tt1e5
 t1tties
 teets
