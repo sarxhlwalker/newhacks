@@ -1,5 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
+import { Assignment, assModel } from "../models/assignments";
+import { Group, groupModel } from "../models/groups";
+import { userModel } from "../models/users";
 
 export const ERROR_MSGS = {
     invalidSession: "Invalid session; try logging out and back in.",
@@ -59,4 +62,24 @@ export function apiFunctionWrap(func: APIEndpointFunction) {
             data: output,
         });
     };
+}
+
+/*
+    The following are getter functions that will throw an error to the user
+    if an error occurs, otherwise returning the requested resource guaranteed
+    to be non-null.
+*/
+
+export async function safeGetAssignment(ctx: APIFunctionContext, id: string) {
+    let assignment = await assModel.findOne({ assignmentId: id });
+
+    if (!assignment) ctx.replyWithError("The requested assignment was not found.");
+    return assignment as Assignment;
+}
+
+export async function safeGetGroup(ctx: APIFunctionContext, id: string) {
+    let group = await groupModel.findOne({ groupId: id });
+
+    if (!group) ctx.replyWithError("The requested group was not found.");
+    return group as Group;
 }

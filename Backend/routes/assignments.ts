@@ -7,7 +7,7 @@ import { groupModel } from "../models/groups";
 
 import mongoose from "mongoose";
 import express from "express";
-import { APIFunctionContext, apiFunctionWrap, ERROR_MSGS } from "./util";
+import { APIFunctionContext, apiFunctionWrap, ERROR_MSGS, safeGetAssignment, safeGetGroup } from "./util";
 const router = express.Router();
 
 /*
@@ -122,24 +122,19 @@ router.post(
             ctx.replyWithError(ERROR_MSGS.invalidSession);
         }
         // Checks Assignment Id:
-        let assnRep = await assModel.findOne({ assignmentId: body.assignmentId });
-        if (!assnRep) {
-            ctx.replyWithError("The provided assignment was not found");
-        }
+        let assnRep = await safeGetAssignment(ctx, body.assignmentId);
         // Checks group
-        let group = await groupModel.findOne({ groupId: assnRep.groupId });
-        if (!group) {
-            ctx.replyWithError("This group no longer exists");
-        }
+        let group = await safeGetGroup(ctx, assnRep.groupId);
 
         let res1 = await assModel.deleteOne({ assignmentId: body.assignmentId });
-        let new_groups = await assModel.find({ groupId: group.groupId });
-        if (new_groups) {
-            let res2 = await groupModel.updateOne(
+        let newGroups = await assModel.find({ groupId: group.groupId });
+        if (newGroups) {
+            await groupModel.updateOne(
                 { groupId: group.groupId },
-                { assignments: JSON.stringify(new_groups) }
+                { assignments: JSON.stringify(newGroups) }
             );
         }
+
         return res1;
     })
 );
