@@ -97,7 +97,7 @@ router.post(
         if (errorMessage !== null) ctx.replyWithError(errorMessage);
 
         await userModel.updateOne(
-            { user: user.id },
+            { id: user.id },
             {
                 email: body.newEmail,
                 firstname: body.newFirstname,
