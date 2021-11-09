@@ -77,7 +77,7 @@ class RegistrationContainer extends React.Component<IProps, IState> {
                         }).then((response) => {
                             if (response.error) {
                                 this.setState({
-                                    registerStatusMessage: response.error[0],
+                                    registerStatusMessage: response.error,
                                 });
                             } else {
                                 let sessionID = (response.data as any).sid;
