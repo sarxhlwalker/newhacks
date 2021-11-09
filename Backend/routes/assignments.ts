@@ -7,7 +7,13 @@ import { groupModel } from "../models/groups";
 
 import mongoose from "mongoose";
 import express from "express";
-import { APIFunctionContext, apiFunctionWrap, ERROR_MSGS, safeGetAssignment, safeGetGroup } from "./util";
+import {
+    APIFunctionContext,
+    apiFunctionWrap,
+    resolveSessionID,
+    safeGetAssignment,
+    safeGetGroup,
+} from "./util";
 const router = express.Router();
 
 /*
@@ -19,22 +25,11 @@ router.post(
     "/create",
     apiFunctionWrap(async (ctx: APIFunctionContext) => {
         let body = ctx.req.body;
-        let sid = body.sid;
 
-        let resUser = await userModel.findOne({ sid: sid });
-        if (!resUser) {
-            ctx.replyWithError(ERROR_MSGS.invalidSession);
-        }
+        let resUser = await resolveSessionID(ctx, body.sid);
 
-        // User is valid
-        // Ensure group is valid
-        if (!funcs.validateGroup(ctx.req.body.groupId)) {
-            ctx.replyWithError("No such group exists");
-        }
-
-        // Group is now valid
-        let groupFind = (await groupModel.findOne({ groupId: body.groupId }))!;
-        let members: string[] = JSON.parse(groupFind.members);
+        let group = await safeGetGroup(ctx, body.groupId);
+        let members: string[] = JSON.parse(group.members);
         if (!members.includes(resUser.id)) {
             ctx.replyWithError("You are not in this group!");
         }
@@ -56,7 +51,7 @@ router.post(
             description: body.description,
             date: body.date,
             completed: JSON.stringify([]),
-            groupId: groupFind.groupId,
+            groupId: group.groupId,
         };
 
         // Validate the assignment object
@@ -67,11 +62,11 @@ router.post(
         }
 
         let result = await assModel.create(assignment);
-        let curr_ass = JSON.parse(groupFind.assignments);
+        let curr_ass = JSON.parse(group.assignments);
         curr_ass.push(assignment);
 
         let res2 = await groupModel.updateOne(
-            { groupId: groupFind.groupId },
+            { groupId: group.groupId },
             { assignments: JSON.stringify(curr_ass) }
         );
 
@@ -88,11 +83,9 @@ router.post(
     "/get",
     apiFunctionWrap(async (ctx: APIFunctionContext) => {
         let body = ctx.req.body;
-        let sid = body.sid;
-        let resUser = await userModel.findOne({ sid: sid });
-        if (!resUser) {
-            ctx.replyWithError(ERROR_MSGS.invalidSession);
-        }
+
+        let resUser = await resolveSessionID(ctx, body.sid);
+
         if (!funcs.validateGroup(body.groupId)) {
             ctx.replyWithError("Group not found");
         }
@@ -115,12 +108,8 @@ router.post(
     "/delete",
     apiFunctionWrap(async (ctx: APIFunctionContext) => {
         let body = ctx.req.body;
-        let sid = body.sid;
+        let resUser = await resolveSessionID(ctx, body.sid);
 
-        let resUser = await userModel.findOne({ sid: sid });
-        if (!resUser) {
-            ctx.replyWithError(ERROR_MSGS.invalidSession);
-        }
         // Checks Assignment Id:
         let assnRep = await safeGetAssignment(ctx, body.assignmentId);
         // Checks group
@@ -148,33 +137,22 @@ router.post(
     "/mark/done",
     apiFunctionWrap(async (ctx: APIFunctionContext) => {
         let body = ctx.req.body;
-        let sid = body.sid;
+        let resUser = await resolveSessionID(ctx, body.sid);
 
-        let resUser = await userModel.findOne({ sid: sid });
-        if (!resUser) {
-            ctx.replyWithError(ERROR_MSGS.invalidSession);
-        }
+        let assn = await safeGetAssignment(ctx, body.assignmentId);
+        let group = await safeGetGroup(ctx, assn.groupId);
 
-        // Checks Assignment Id:
-        let assnRep = await assModel.findOne({ assignmentId: body.assignmentId });
-        if (!assnRep) {
-            ctx.replyWithError("Assignment not found");
-        }
-        let group = await groupModel.findOne({ groupId: assnRep.groupId });
-        if (!group) {
-            ctx.replyWithError("Group deleted");
-        }
-        let completed = JSON.parse(assnRep.completed);
+        let completed = JSON.parse(assn.completed);
         if (completed.includes(resUser.id)) {
             ctx.replyWithError("Already filled");
         }
 
         // Complete assignment
 
-        assnRep.completed = JSON.stringify(completed.concat(resUser.id));
+        assn.completed = JSON.stringify(completed.concat(resUser.id));
         let groupAssignment = JSON.parse(group.assignments);
         for (let i in groupAssignment) {
-            if (groupAssignment[i].assignmentId === assnRep.assignmentId) {
+            if (groupAssignment[i].assignmentId === assn.assignmentId) {
                 let psCompleted = JSON.parse(groupAssignment[i].completed);
                 psCompleted.push(resUser.id);
                 groupAssignment[i].completed = JSON.stringify(psCompleted);
@@ -183,11 +161,11 @@ router.post(
         group.assignments = JSON.stringify(groupAssignment);
 
         let res1 = await assModel.updateOne(
-            { assignmentId: assnRep.assignmentId },
-            { completed: assnRep.completed }
+            { assignmentId: assn.assignmentId },
+            { completed: assn.completed }
         );
         let res2 = await groupModel.updateOne(
-            { groupId: assnRep.groupId },
+            { groupId: assn.groupId },
             { assignments: group.assignments }
         );
         const accountSid = process.env.ACCOUNT_SID; // Your Account SID from www.twilio.com/console
@@ -203,7 +181,7 @@ router.post(
         }
 
         let content =
-            resUser.username + " has just completed " + assnRep.title + ". You can do it too!";
+            resUser.username + " has just completed " + assn.title + ". You can do it too!";
         console.log(phones);
         for (let phone of phones) {
             console.log(phone);
