@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import express from "express";
 import { groupsFuncs } from "./funcs/groups";
 import { APIFunctionContext, apiFunctionWrap, resolveSessionID, safeGetGroup } from "./util";
+import { globalFuncs } from "./funcs/globals";
 
 const router = express.Router();
 
@@ -45,7 +46,7 @@ router.post(
         // Create a group with user as leader [ Group | null returned based on user]
         let group: Group = {
             _id: new mongoose.Types.ObjectId().toString(),
-            groupId: body.groupId,
+            groupId: globalFuncs.generateTextId(5),
             name: body.name,
             leaderId: user.id,
             leaderName: user.username,
