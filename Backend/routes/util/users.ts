@@ -3,7 +3,7 @@ import { funcs } from "../../funcs";
 import { globalFuncs } from "./globals";
 
 import mongoose from "mongoose";
-import { isAlphanumeric, isProfane, isStringEmpty } from "./validation";
+import { isAlphanumeric, isProfane, isStringEmpty } from "./string_validation";
 
 export interface UserInfoUpdate {
     newEmail: string;
@@ -74,8 +74,8 @@ export const userFuncs = {
         if (repeat && didEmailChange) return "This email is already in use";
 
         // Validate other fields
-        if (!info.newFirstname || !info.newLastname) return "Name cannot be empty";
-        if (!info.newPassword) return "Password cannot be empty";
+        if (isStringEmpty(info.newFirstname) || isStringEmpty(info.newLastname)) return "Name cannot be empty";
+        if (info.newPassword.length < 3) return "Password must be at least three characters";
         if (!info.newPhone) return "Invalid phone number";
 
         return null;
