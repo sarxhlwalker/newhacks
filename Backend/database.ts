@@ -1,8 +1,8 @@
-import { userModel } from "./models/users";
+import { User, userModel } from "./models/users";
 
 export namespace Database {
-    export function getUser(id: string) {
+    export async function getUser(id: string) {
         /* Returns null if no user was found */
-        return userModel.findOne({})
+        return await userModel.findById(id) as User | null;
     }
 }

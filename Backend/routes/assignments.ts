@@ -133,14 +133,13 @@ router.post(
         let assn = await safeGetAssignment(ctx, body.assignmentId);
         let group = await safeGetGroup(ctx, assn.groupId);
 
-        let completed = assn.completedBy;
-        if (completed.includes(user._id)) {
+        if (assn.completedBy.includes(user._id)) {
             ctx.replyWithError("Already filled");
         }
 
         // Complete assignment
 
-        assModel.findByIdAndUpdate(assn._id, { completedBy: completed.concat(user._id) });
+        assModel.findByIdAndUpdate(assn._id, { completedBy: assn.completedBy.concat(user._id) });
 
         // Send text message
         const accountSid = process.env.ACCOUNT_SID; // Your Account SID from www.twilio.com/console
