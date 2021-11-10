@@ -10,6 +10,7 @@ import express from "express";
 import {
     APIFunctionContext,
     apiFunctionWrap,
+    newObjectID,
     resolveSessionID,
     safeGetAssignment,
     safeGetGroup,
@@ -46,7 +47,7 @@ router.post(
         }
 
         let assignment: Assignment = {
-            _id: new mongoose.Types.ObjectId().toString(),
+            _id: newObjectID(),
             title: body.title,
             description: body.description,
             date: body.date,

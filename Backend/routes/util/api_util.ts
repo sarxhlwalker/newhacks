@@ -8,7 +8,7 @@ export const ERROR_MSGS = {
     invalidSession: "Invalid session; try logging out and back in.",
 };
 
-export function createMongoObjectID() {
+export function newObjectID() {
     return new mongoose.Types.ObjectId().toString();
 }
 

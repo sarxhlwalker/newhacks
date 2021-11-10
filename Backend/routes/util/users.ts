@@ -4,6 +4,7 @@ import { globalFuncs } from "./globals";
 
 import mongoose from "mongoose";
 import { isAlphanumeric, isProfane, isStringEmpty } from "./string_validation";
+import { newObjectID } from "./api_util";
 
 export interface UserInfoUpdate {
     newEmail: string;
@@ -53,7 +54,7 @@ export const userFuncs = {
 
         // Return the user
         return {
-            _id: new mongoose.Types.ObjectId().toString(),
+            _id: newObjectID(),
             sid: sid,
             username: body.username,
             password: body.password,

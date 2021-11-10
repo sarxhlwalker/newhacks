@@ -7,6 +7,7 @@ import { groupsFuncs } from "./util/groups";
 import {
     APIFunctionContext,
     apiFunctionWrap,
+    newObjectID,
     resolveSessionID,
     safeGetGroup,
 } from "./util/api_util";
@@ -50,7 +51,7 @@ router.post(
 
         // Create a group with user as leader [ Group | null returned based on user]
         let group: Group = {
-            _id: new mongoose.Types.ObjectId().toString(),
+            _id: newObjectID(),
             groupCode: await groupsFuncs.generateUniqueGroupCode(),
             name: body.name,
             leaderId: user._id,
